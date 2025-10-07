@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InsightLab: NYC Housing Dynamics — Case Study</title>
+    <meta name="description" content="Full narrative, methods, and technical appendix for the InsightLab NYC housing dynamics case study." />
+    <link rel="icon" type="image/svg+xml" href="./assets/logo.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/animations.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+    <script type="module" src="./js/main.js" defer></script>
+  </head>
+  <body data-page="study">
+    <header class="hero" style="min-height: 60vh">
+      <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
+        <img src="./assets/icons/theme.svg" alt="Theme" />
+      </button>
+      <h1>InsightLab: NYC Housing Dynamics</h1>
+      <p>
+        “How income, transport, and environment shape rent trends.” This case study packages fourteen years of replicated NYC housing data with correlations, regression, and narrative scaffolding to support strategy conversations.
+      </p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="./index.html">Return to the story</a>
+        <a class="btn-secondary" href="#executive-summary">Jump to insights</a>
+      </div>
+    </header>
+
+    <main class="anchor-layout">
+      <nav class="anchor-nav" aria-label="Study navigation">
+        <a href="#executive-summary" class="active">Executive Summary</a>
+        <a href="#methodology">Data &amp; Methodology</a>
+        <a href="#results">Results</a>
+        <a href="#interpretation">Interpretation</a>
+        <a href="#appendix">Technical Appendix</a>
+        <a href="#sql">SQL Equivalent</a>
+        <a href="#next">What I'd Do Next</a>
+      </nav>
+
+      <div class="anchor-content">
+        <section id="executive-summary" aria-labelledby="exec-title">
+          <h2 id="exec-title">Executive Summary</h2>
+          <p class="text-block">
+            Three findings surface repeatedly when the data is filtered across different user personas. They auto-refresh as you adjust the controls.
+          </p>
+          <ul class="list-disc pl-6 space-y-3">
+            <li data-summary-item="0">Loading growth insight…</li>
+            <li data-summary-item="1">Loading spread insight…</li>
+            <li data-summary-item="2">Loading correlation insight…</li>
+          </ul>
+          <p class="text-sm text-slate-400 mt-4">Caveat: All metrics rely on replicated medians; neighborhood distributions will vary in live feeds.</p>
+        </section>
+
+        <section id="methodology" aria-labelledby="method-title">
+          <h2 id="method-title">Data &amp; Methodology</h2>
+          <div class="prose prose-invert max-w-none">
+            <h3>Sources</h3>
+            <p>
+              The replicated CSV blends historic medians from NYC Department of Housing Preservation &amp; Development datasets with American Community Survey income bands. Subway access scores synthesize MTA station density per borough, while air quality proxies derive from NYC DOHMH AQI reports.
+            </p>
+            <h3>Dictionary</h3>
+            <ul>
+              <li><strong>median_rent:</strong> Monthly median asking rent in USD.</li>
+              <li><strong>median_income:</strong> Annual median household income in USD.</li>
+              <li><strong>subway_access_score:</strong> 0–100 index for subway proximity and frequency.</li>
+              <li><strong>air_quality_index:</strong> AQI-like measure; lower is better air quality.</li>
+            </ul>
+            <h3>Cleaning rules</h3>
+            <p>
+              Type casting ensures numeric comparison. Rows missing rent or income are dropped. Air quality is inverted in regression to capture cleaner-air premium.
+            </p>
+            <h3>Caveats</h3>
+            <p>
+              Borough medians smooth intra-borough diversity. Values represent a static snapshot for reproducible analysis rather than live operational feeds.
+            </p>
+          </div>
+        </section>
+
+        <section id="results" aria-labelledby="results-title">
+          <h2 id="results-title">Results</h2>
+          <p class="text-block">
+            Charts update with the controls on this page, mirroring the landing experience but accompanied by deeper commentary and textual summaries for accessibility.
+          </p>
+          <div class="chart-card">
+            <h3>Median rent leaderboard</h3>
+            <p data-narrative="growth" class="chart-summary"></p>
+            <canvas id="chart-bar" aria-label="Median rent per borough"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Longitudinal rent trends</h3>
+            <p class="chart-summary">Toggle boroughs in the filter to isolate specific trajectories and recession impacts.</p>
+            <canvas id="chart-line" aria-label="Rent trajectories"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Income vs rent, subway bubble</h3>
+            <p data-narrative="correlation" class="chart-summary"></p>
+            <canvas id="chart-scatter" aria-label="Scatter plot of rent vs income"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Heatmap pulses</h3>
+            <p data-narrative="disparity" class="chart-summary"></p>
+            <canvas id="chart-heatmap" width="900" height="420" aria-label="Heatmap of rent dynamics"></canvas>
+          </div>
+        </section>
+
+        <section id="interpretation" aria-labelledby="interpret-title">
+          <h2 id="interpret-title">Interpretation</h2>
+          <div class="prose prose-invert max-w-none">
+            <p data-narrative="regression">
+              Regression narrative loading…
+            </p>
+            <p>
+              Drivers: Income retains the heaviest pull on rent outcomes, with subway accessibility acting as a secondary uplift. Cleaner air shows a smaller but non-trivial premium—especially in waterfront districts of Queens and Staten Island.
+            </p>
+            <table class="table-like" aria-describedby="ols-caption">
+              <caption id="ols-caption" class="visually-hidden">OLS regression summary</caption>
+              <thead>
+                <tr>
+                  <th>Term</th>
+                  <th>Coefficient (β)</th>
+                  <th>Interpretation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Intercept</td>
+                  <td data-beta="intercept">Auto-filled via JS</td>
+                  <td>Baseline rent with zeroed predictors.</td>
+                </tr>
+                <tr>
+                  <td>Income</td>
+                  <td data-beta="income">Auto-filled via JS</td>
+                  <td>Rent change per dollar income (latest five-year window).</td>
+                </tr>
+                <tr>
+                  <td>Subway</td>
+                  <td data-beta="subway">Auto-filled via JS</td>
+                  <td>Rent change per point of subway score.</td>
+                </tr>
+                <tr>
+                  <td>Cleaner air proxy</td>
+                  <td data-beta="inverseAir">Auto-filled via JS</td>
+                  <td>Rent change per point improvement in air quality (100 − AQI).</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="appendix" aria-labelledby="appendix-title">
+          <h2 id="appendix-title">Technical Appendix</h2>
+          <div class="prose prose-invert max-w-none">
+            <h3>Architecture</h3>
+            <pre><code>Browser
+ ├─ index.html / study.html (semantic scaffolding)
+ ├─ css/
+ │   ├─ style.css (variables, layout)
+ │   └─ animations.css (entrance effects)
+ ├─ js/
+ │   ├─ main.js (bootstrap, orchestration)
+ │   ├─ dataLoader.js (CSV + JSON fetch)
+ │   ├─ analysis.js (aggregations, correlations, OLS)
+ │   ├─ charts.js (Chart.js + custom heatmap)
+ │   ├─ filters.js (UI state)
+ │   ├─ narrative.js (auto-generated copy)
+ │   ├─ scrolly.js (intersection observers)
+ │   └─ theme.js (dark/light persistence)
+ └─ data/
+     ├─ nyc_median_rent.csv
+     ├─ nyc_borough_meta.json
+     └─ derived_summary.json (template, downloadable)</code></pre>
+          </div>
+        </section>
+
+        <section id="sql" aria-labelledby="sql-title">
+          <h2 id="sql-title">SQL Equivalent</h2>
+          <div class="prose prose-invert max-w-none">
+            <p>The logic used in JavaScript translates to the following SQL-inspired snippets:</p>
+            <pre><code>-- Rent growth since baseline
+SELECT borough,
+       FIRST_VALUE(median_rent) OVER w AS rent_2010,
+       LAST_VALUE(median_rent) OVER w AS rent_2024,
+       (LAST_VALUE(median_rent) OVER w - FIRST_VALUE(median_rent) OVER w) / FIRST_VALUE(median_rent) OVER w AS pct_growth
+FROM nyc_median_rent
+WINDOW w AS (PARTITION BY borough ORDER BY year
+            ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING);
+
+-- Year-over-year change
+SELECT year, borough,
+       median_rent - LAG(median_rent) OVER (PARTITION BY borough ORDER BY year) AS delta,
+       (median_rent - LAG(median_rent) OVER (PARTITION BY borough ORDER BY year)) / LAG(median_rent) OVER (PARTITION BY borough ORDER BY year) AS pct
+FROM nyc_median_rent;
+
+-- Correlation-ready view
+SELECT borough, year, median_rent, median_income, subway_access_score,
+       (100 - air_quality_index) AS inverse_air_quality
+FROM nyc_median_rent
+WHERE year BETWEEN 2019 AND 2024;</code></pre>
+          </div>
+        </section>
+
+        <section id="next" aria-labelledby="next-title">
+          <h2 id="next-title">What I'd Do Next</h2>
+          <div class="prose prose-invert max-w-none">
+            <ul>
+              <li>Blend in Zillow rental listings and StreetEasy inventory for more granular sub-markets.</li>
+              <li>Join MTA station-level turnstile data to trace transit elasticity at the neighborhood level.</li>
+              <li>Introduce rent-burden metrics by pairing ACS income quintiles with rent changes.</li>
+              <li>Stress-test with policy scenarios (Good Cause Eviction, property tax shifts).</li>
+            </ul>
+            <div class="download-buttons">
+              <a data-download="csv" class="btn-secondary" role="button">
+                <img src="./assets/icons/download.svg" alt="Download CSV" width="18" height="18" />
+                Download CSV
+              </a>
+              <button data-download="json" class="btn-secondary">
+                <img src="./assets/icons/download.svg" alt="Download derived JSON" width="18" height="18" />
+                Download derived JSON
+              </button>
+              <button data-print class="print-button">Print / Save PDF</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <p>Built for GitHub Pages. Replace ./data/nyc_median_rent.csv with fresh exports to refresh all visuals.</p>
+    </footer>
+  </body>
+</html>
