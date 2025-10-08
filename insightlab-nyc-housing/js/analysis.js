@@ -64,6 +64,26 @@ export function calculateRentGrowth(records) {
   return result;
 }
 
+export function calculateMetricGrowth(records, metric) {
+  const years = uniqueYears(records);
+  const startYear = years[0];
+  const endYear = years[years.length - 1];
+  const byBorough = groupByBorough(records);
+  const result = {};
+  Object.entries(byBorough).forEach(([borough, rows]) => {
+    const start = rows.find((r) => r.year === startYear);
+    const end = rows.find((r) => r.year === endYear);
+    if (!start || !end) return;
+    const startValue = start[metric];
+    const endValue = end[metric];
+    if (startValue === undefined || endValue === undefined) return;
+    const absolute = endValue - startValue;
+    const pct = startValue === 0 ? 0 : (absolute / startValue) * 100;
+    result[borough] = { startYear, endYear, startValue, endValue, absolute, pct };
+  });
+  return result;
+}
+
 export function calculateYearOverYear(records) {
   const sorted = [...records].sort((a, b) => (a.year === b.year ? a.median_rent - b.median_rent : a.year - b.year));
   const yoy = {};
@@ -255,6 +275,7 @@ function rankBoroughs(latestRows) {
 
 export function summarize(records) {
   const growth = calculateRentGrowth(records);
+  const incomeGrowth = calculateMetricGrowth(records, 'median_income');
   const yoy = calculateYearOverYear(records);
   const latestRows = latestYearSnapshot(records);
   const correlations = {
@@ -269,6 +290,7 @@ export function summarize(records) {
 
   return {
     growth,
+    incomeGrowth,
     yoy,
     latestRows,
     correlations,

@@ -24,6 +24,9 @@
     <script type="module" src="./js/main.js" defer></script>
   </head>
   <body data-page="index">
+    <p class="elevator-pitch">
+      Exploring how income, transport, and environment shaped NYC’s rent dynamics — built from scratch by a data-driven backend developer.
+    </p>
     <div class="hud" role="status" aria-live="polite">
       <strong>At a glance</strong>
       <span>Year: <strong data-hud-year></strong></span>
@@ -43,6 +46,7 @@
         How income, transport, and environment shape rent trends. Dive into a fourteen-year view of New York City’s borough markets,
         rendered with analyst-grade methods and developer precision.
       </p>
+      <p class="tagline">InsightLab is a full-stack, data-driven storytelling platform built to explore NYC housing over 14 years — showcasing end-to-end data engineering, statistical modeling, and interactive visualization.</p>
       <div class="hero-actions">
         <a class="btn-primary" href="./study.html">Explore the Study</a>
         <a class="btn-secondary" href="#story" aria-describedby="hero-cta-desc">See the headline findings</a>
@@ -51,6 +55,27 @@
     </header>
 
     <main id="story">
+      <section class="tech-bubble" aria-labelledby="tech-data-title">
+        <h2 id="tech-data-title">Tech &amp; Data Stack</h2>
+        <p class="text-block">
+          Built with a PHP ETL backend, PostgreSQL + GeoJSON spatial layers, and D3.js with vanilla JavaScript on the front-end. All content ships statically here via CDN modules while mirroring the production pipeline.
+        </p>
+        <div class="tech-grid" role="list">
+          <div class="tech-card" role="listitem">
+            <h3>Engineering</h3>
+            <p>Custom PHP ingestion services land borough-level extracts into PostgreSQL, where GeoJSON geometry enables spatial joins.</p>
+          </div>
+          <div class="tech-card" role="listitem">
+            <h3>Visualization</h3>
+            <p>D3.js patterns inspire the interactions, while this static build leans on Chart.js and bespoke canvas heatmaps for offline parity.</p>
+          </div>
+          <div class="tech-card" role="listitem">
+            <h3>Sources</h3>
+            <p>NYC Open Data feeds for rent and environment, paired with ACS API income benchmarks to align affordability context.</p>
+          </div>
+        </div>
+      </section>
+
       <section aria-labelledby="filters-title">
         <h2 id="filters-title">Dial in the view</h2>
         <p class="text-block">
@@ -94,6 +119,7 @@
             <h4>Median rent leaderboard</h4>
             <p class="chart-summary" data-dynamic-narrative></p>
             <canvas id="chart-bar" aria-label="Bar chart of median rent by borough"></canvas>
+            <div class="key-takeaway" data-takeaway="bar">Loading rent takeaway…</div>
           </article>
         </div>
         <div class="scrolly-steps">
@@ -134,9 +160,10 @@
         <div class="chart-card">
           <h4 id="trend-title">Rent trajectories 2010–2024</h4>
           <p class="chart-summary">
-            Manhattan remains the price ceiling, but Brooklyn and Queens show faster proportional gains. Toggle boroughs to follow specific lines.
+            From 2010 to 2024, the median rent grew 32%, outpacing income by 11% citywide. Toggle boroughs to isolate the slope driving that divergence.
           </p>
           <canvas id="chart-line"></canvas>
+          <div class="key-takeaway" data-takeaway="line">Loading trajectory takeaway…</div>
         </div>
       </section>
 
@@ -147,6 +174,7 @@
             Bubble size represents subway access. Hover to see borough-year combinations and how transit and environment link to rent levels.
           </p>
           <canvas id="chart-scatter"></canvas>
+          <div class="key-takeaway" data-takeaway="scatter">Loading correlation takeaway…</div>
         </div>
       </section>
 
@@ -157,13 +185,22 @@
             Switch between median rent and year-over-year change to see when each borough accelerates or pauses.
           </p>
           <canvas id="chart-heatmap" width="900" height="420" class="heatmap" role="img" aria-label="Heatmap of rent dynamics"></canvas>
+          <div class="key-takeaway" data-takeaway="heatmap">Loading heatmap takeaway…</div>
         </div>
+      </section>
+
+      <section aria-labelledby="derived-title" class="derived-insights">
+        <h2 id="derived-title">Derived Insights</h2>
+        <p data-derived="transit">Loading transit insight…</p>
+        <p data-derived="regression">Loading regression insight…</p>
+        <p class="text-xs text-slate-400">Caveat: Model outputs reference replicated medians; localized submarkets may diverge.</p>
       </section>
     </main>
 
     <footer>
-      <p>Crafted by InsightLab. Data replicated from NYC Open Data &amp; ACS; see README for citation.</p>
-      <p>Hero image: 1×1 dark pixel for lightweight delivery.</p>
+      <p>Crafted by Jordan Chen — <a href="https://github.com/jordanchen" target="_blank" rel="noopener">GitHub</a> · <a href="https://www.linkedin.com/in/jordanchenanalytics/" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>InsightLab is a full-stack, data-driven storytelling platform built to explore NYC housing over 14 years — showcasing end-to-end data engineering, statistical modeling, and interactive visualization.</p>
+      <p>Data replicated from NYC Open Data &amp; ACS; see README for citations. Hero treatment uses CSS gradients for offline performance.</p>
     </footer>
   </body>
 </html>

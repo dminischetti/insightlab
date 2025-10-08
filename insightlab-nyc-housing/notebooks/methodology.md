@@ -12,7 +12,7 @@ The CSV included in this repository is a replicated snapshot calibrated to the r
 1. Established 2010 baseline rents and incomes from HPD and ACS tables, then fitted compound annual growth trajectories aligned with historic observations. Manual adjustments were applied to reflect known events (e.g., post-2012 Brooklyn surge, 2020 rent dip).
 2. Derived subway access scores by normalising station counts per square mile and adjusting for service frequency, ensuring Manhattan > Brooklyn > Queens > Bronx > Staten Island ordering with subtle shifts across years.
 3. Modeled air quality indices to trend downward (improving) with a temporary 2020 reversal, mirroring DOHMH AQI series.
-4. Validated the resulting medians against public press releases to ensure plausibility.
+4. Validated the resulting medians against public press releases to ensure plausibility, then copied the curated rows into `/js/embeddedData.js` so local file access (file://) still renders charts without triggering fetch/CORS issues.
 
 ## Analytical formulas
 - **Pearson correlation** between variables \(x\) and \(y\):
@@ -30,4 +30,5 @@ The CSV included in this repository is a replicated snapshot calibrated to the r
 - Borough medians mask intra-borough heterogeneity (e.g., north vs south Brooklyn). Add neighbourhood granularity for tactical decisions.
 - Subway access and air quality are composite proxies; they should be replaced with station-level ridership and measured particulate data in production.
 - COVID-19 impacts in 2020–2021 generated sharp anomalies; regression residuals should be stress-tested with scenario analysis.
+- Transit correlation is summarised with \(r^2\) callouts (e.g., ~0.41 variance explained) to convey strength, but correlation ≠ causation; treat as directional insight.
 - Replicated dataset values cannot substitute for live compliance reporting or investment-grade due diligence.
