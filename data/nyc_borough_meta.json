@@ -1,0 +1,27 @@
+{
+  "Manhattan": {
+    "population": 1628706,
+    "area_sq_mi": 22.83,
+    "note": "Global finance hub; dense subway coverage and highest land values."
+  },
+  "Brooklyn": {
+    "population": 2559903,
+    "area_sq_mi": 69.5,
+    "note": "Diverse housing stock with rapid post-2010 rent growth in northern neighborhoods."
+  },
+  "Queens": {
+    "population": 2253858,
+    "area_sq_mi": 108.53,
+    "note": "Multi-family mix; strong transit nodes in LIC, Flushing drive rent gains."
+  },
+  "Bronx": {
+    "population": 1421697,
+    "area_sq_mi": 42.47,
+    "note": "Historically lower rents but fastest relative growth alongside new investment."
+  },
+  "Staten Island": {
+    "population": 495747,
+    "area_sq_mi": 57.5,
+    "note": "Suburban character with ferry dependence; rents trail city median."
+  }
+}
