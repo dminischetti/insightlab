@@ -1,0 +1,30 @@
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.step.active {
+  border-color: var(--accent);
+  box-shadow: 0 18px 40px rgba(14, 116, 144, 0.18);
+}
+
+.chart-card.enter {
+  animation: floatUp 0.9s ease forwards;
+}
+
+@keyframes floatUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
