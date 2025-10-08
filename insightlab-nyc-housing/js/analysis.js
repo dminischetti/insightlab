@@ -318,8 +318,12 @@ export function generateHeadlines({ growth, latestRows, correlations, regression
   if (!latestRows?.length || !growth || !Object.keys(growth).length) return [];
 
   const strongestGrowth = Object.entries(growth)
-    .map(([borough, values]) => ({ borough, pct: values.pct }))
+    .map(([borough, values]) => ({ borough, pct: values.pct, meta: values }))
+    .filter((entry) => Number.isFinite(entry.pct))
     .sort((a, b) => b.pct - a.pct)[0];
+
+  const topRow = latestRows.find((row) => row && Number.isFinite(row.median_rent));
+  if (!strongestGrowth || !topRow) return [];
 
   const spreadYears = disparity ? Object.keys(disparity) : [];
   const latestSpreadYear = spreadYears.length ? Math.max(...spreadYears.map(Number)) : null;
@@ -338,20 +342,21 @@ export function generateHeadlines({ growth, latestRows, correlations, regression
         .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0]
     : null;
 
-  const latestYearValue = regWindow && regWindow.length ? Math.max(...regWindow.map((row) => row.year)) : latestRows[0].year;
-  const topVsBottom = latestSpread ? latestRows[0].median_rent - latestSpread.min : 0;
+  const recentYears = regWindow && regWindow.length ? regWindow.map((row) => row.year).filter(Number.isFinite) : [];
+  const latestYearValue = recentYears.length ? Math.max(...recentYears) : topRow.year;
+  const topVsBottom = latestSpread && Number.isFinite(latestSpread.min) ? topRow.median_rent - latestSpread.min : 0;
 
   return [
     {
       title: `${strongestGrowth.borough} leads rent acceleration`,
-      body: `${strongestGrowth.borough} rents climbed ${strongestGrowth.pct.toFixed(1)}% from ${growth[strongestGrowth.borough].startYear} to ${growth[strongestGrowth.borough].endYear}, marking the fastest borough-scale gain.`,
+      body: `${strongestGrowth.borough} rents climbed ${strongestGrowth.pct.toFixed(1)}% from ${strongestGrowth.meta.startYear} to ${strongestGrowth.meta.endYear}, marking the fastest borough-scale gain.`,
       evidence: [strongestGrowth.pct.toFixed(1)],
       caveats: 'Growth is percentage-based; absolute rents remain below Manhattan levels.'
     },
     {
-      title: `${latestRows[0].borough} remains the price ceiling`,
-      body: `In ${latestYearValue}, ${latestRows[0].borough} posts a median asking rent of $${latestRows[0].median_rent.toLocaleString()}, ${latestSpread ? `$${topVsBottom.toLocaleString()} above` : 'outpacing'} the city-floor borough.`,
-      evidence: [latestRows[0].median_rent, latestSpread?.spread ?? null],
+      title: `${topRow.borough} remains the price ceiling`,
+      body: `In ${latestYearValue}, ${topRow.borough} posts a median asking rent of $${topRow.median_rent.toLocaleString()}, ${latestSpread ? `$${topVsBottom.toLocaleString()} above` : 'outpacing'} the city-floor borough.`,
+      evidence: [topRow.median_rent, latestSpread?.spread ?? null],
       caveats: 'Borough medians mask neighborhood heterogeneity and unit size mix.'
     },
     {

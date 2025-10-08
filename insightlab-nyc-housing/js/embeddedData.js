@@ -84,7 +84,7 @@ export const embeddedBoroughMeta = {
   "Staten Island": { "population": 495747, "area_sq_mi": 57.5, "note": "Suburban character with ferry dependence; rents trail city median." }
 };
 
-export const embeddedSummaryTemplate = {
+export const embeddedSummary = {
   "generated_at": null,
   "latest_year": null,
   "rent_growth": {},
