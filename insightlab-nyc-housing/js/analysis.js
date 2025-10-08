@@ -274,6 +274,19 @@ function rankBoroughs(latestRows) {
 }
 
 export function summarize(records) {
+  if (!Array.isArray(records) || records.length === 0) {
+    return {
+      growth: {},
+      incomeGrowth: {},
+      yoy: {},
+      latestRows: [],
+      correlations: { rent_income: null, rent_subway: null, rent_air: null },
+      regression: null,
+      disparity: {},
+      headlines: [],
+      latestYear: null
+    };
+  }
   const growth = calculateRentGrowth(records);
   const incomeGrowth = calculateMetricGrowth(records, 'median_income');
   const yoy = calculateYearOverYear(records);
@@ -302,12 +315,15 @@ export function summarize(records) {
 }
 
 export function generateHeadlines({ growth, latestRows, correlations, regression, disparity, regWindow }) {
+  if (!latestRows?.length || !growth || !Object.keys(growth).length) return [];
+
   const strongestGrowth = Object.entries(growth)
     .map(([borough, values]) => ({ borough, pct: values.pct }))
     .sort((a, b) => b.pct - a.pct)[0];
 
-  const latestSpreadYear = Math.max(...Object.keys(disparity).map(Number));
-  const latestSpread = disparity[latestSpreadYear];
+  const spreadYears = disparity ? Object.keys(disparity) : [];
+  const latestSpreadYear = spreadYears.length ? Math.max(...spreadYears.map(Number)) : null;
+  const latestSpread = latestSpreadYear ? disparity[latestSpreadYear] : null;
 
   const correlationEntries = [
     ['household income', correlations.rent_income],
@@ -316,14 +332,14 @@ export function generateHeadlines({ growth, latestRows, correlations, regression
   ].filter(([, value]) => value !== null && !Number.isNaN(value));
   const correlationHighlight = correlationEntries.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0];
 
-  const regressionDriver = regression
+  const regressionDriver = regression?.coefficients
     ? Object.entries(regression.coefficients)
         .filter(([key]) => key !== 'intercept')
         .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0]
     : null;
 
   const latestYearValue = regWindow && regWindow.length ? Math.max(...regWindow.map((row) => row.year)) : latestRows[0].year;
-  const topVsBottom = latestRows[0].median_rent - latestSpread.min;
+  const topVsBottom = latestSpread ? latestRows[0].median_rent - latestSpread.min : 0;
 
   return [
     {
@@ -334,8 +350,8 @@ export function generateHeadlines({ growth, latestRows, correlations, regression
     },
     {
       title: `${latestRows[0].borough} remains the price ceiling`,
-      body: `In ${latestYearValue}, ${latestRows[0].borough} posts a median asking rent of $${latestRows[0].median_rent.toLocaleString()}, $${topVsBottom.toLocaleString()} above the city-floor borough.`,
-      evidence: [latestRows[0].median_rent, latestSpread.spread],
+      body: `In ${latestYearValue}, ${latestRows[0].borough} posts a median asking rent of $${latestRows[0].median_rent.toLocaleString()}, ${latestSpread ? `$${topVsBottom.toLocaleString()} above` : 'outpacing'} the city-floor borough.`,
+      evidence: [latestRows[0].median_rent, latestSpread?.spread ?? null],
       caveats: 'Borough medians mask neighborhood heterogeneity and unit size mix.'
     },
     {

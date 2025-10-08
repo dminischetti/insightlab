@@ -1,9 +1,14 @@
 import { cleanRecords } from './analysis.js';
 import { embeddedRentRecords, embeddedBoroughMeta, embeddedSummaryTemplate } from './embeddedData.js';
 
-async function fetchCSV(path) {
-  const response = await fetch(path);
-  if (!response.ok) throw new Error(`Unable to fetch ${path}`);
+function resolveDataPath(file) {
+  return new URL(`../data/${file}`, import.meta.url).href;
+}
+
+async function fetchCSV(file) {
+  const url = resolveDataPath(file);
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Unable to fetch ${url}`);
   const text = await response.text();
   return new Promise((resolve, reject) => {
     Papa.parse(text, {
@@ -17,16 +22,17 @@ async function fetchCSV(path) {
   });
 }
 
-async function fetchJSON(path) {
-  const response = await fetch(path);
-  if (!response.ok) throw new Error(`Unable to fetch ${path}`);
+async function fetchJSON(file) {
+  const url = resolveDataPath(file);
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Unable to fetch ${url}`);
   return response.json();
 }
 
 export async function loadAllData() {
-  const rawRecords = await safeLoad(() => fetchCSV('./data/nyc_median_rent.csv'), embeddedRentRecords);
-  const boroughMeta = await safeLoad(() => fetchJSON('./data/nyc_borough_meta.json'), embeddedBoroughMeta);
-  const baseSummary = await safeLoad(() => fetchJSON('./data/derived_summary.json'), embeddedSummaryTemplate);
+  const rawRecords = await safeLoad(() => fetchCSV('nyc_median_rent.csv'), embeddedRentRecords);
+  const boroughMeta = await safeLoad(() => fetchJSON('nyc_borough_meta.json'), embeddedBoroughMeta);
+  const baseSummary = await safeLoad(() => fetchJSON('derived_summary.json'), embeddedSummaryTemplate);
   const records = cleanRecords(Array.isArray(rawRecords) ? rawRecords : embeddedRentRecords);
   return { records, boroughMeta, baseSummary };
 }

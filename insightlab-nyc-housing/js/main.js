@@ -20,6 +20,8 @@ const state = {
   boroughMeta: {}
 };
 
+const dataUrl = (file) => new URL(`../data/${file}`, import.meta.url).href;
+
 async function bootstrap() {
   initThemeToggle(document.querySelector('[data-theme-toggle]'));
 
@@ -109,7 +111,7 @@ function bindDownloads() {
   const printButton = document.querySelector('[data-print]');
 
   downloadCsv?.addEventListener('click', () => {
-    downloadFile('./data/nyc_median_rent.csv', 'nyc_median_rent.csv');
+    downloadFile(dataUrl('nyc_median_rent.csv'), 'nyc_median_rent.csv');
   });
 
   downloadJson?.addEventListener('click', () => {
