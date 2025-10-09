@@ -10,7 +10,7 @@ const boroughPalette = {
 
 const chartStore = {
   bar: null,
-  line: null,
+  multiples: [],
   scatter: null,
   heatmap: null
 };
@@ -108,50 +108,72 @@ export function initBarChart(canvas, rows, year) {
   return chartStore.bar;
 }
 
-export function initLineChart(canvas, records, years, boroughs) {
-  const ctx = canvas.getContext('2d');
+export function initLineMultiples(container, records, years, boroughs) {
   const grouped = groupByBorough(records);
   Object.values(grouped).forEach((rows) => rows.sort((a, b) => a.year - b.year));
-  const datasets = boroughs.map((borough) => ({
-    label: borough,
-    data: years.map((year) => {
-      const match = grouped[borough]?.find((row) => row.year === year);
-      return match ? match.median_rent : null;
-    }),
-    borderColor: boroughPalette[borough] ?? '#38bdf8',
-    backgroundColor: withOpacity(boroughPalette[borough] ?? '#38bdf8', 0.25),
-    tension: 0.3,
-    pointRadius: 0,
-    spanGaps: true
-  }));
-
-  chartStore.line = new Chart(ctx, {
-    type: 'line',
-    data: { labels: years, datasets },
-    options: {
-      ...chartDefaults(),
-      plugins: {
-        ...chartDefaults().plugins,
-        tooltip: {
-          ...chartDefaults().plugins.tooltip,
-          callbacks: {
-            label: (context) => `${context.dataset.label}: $${Number(context.raw).toLocaleString()} (${context.label})`
+  const yValues = records.map((row) => row.median_rent).filter((value) => Number.isFinite(value));
+  const min = Math.min(...yValues);
+  const max = Math.max(...yValues);
+  container.innerHTML = '';
+  chartStore.multiples = boroughs.map((borough) => {
+    const canvas = document.createElement('canvas');
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute(
+      'aria-label',
+      `${borough} median rent trend from ${years[0]} to ${years[years.length - 1]}; steady climb with post-2012 lift.`
+    );
+    canvas.dataset.borough = borough;
+    container.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    const dataset = {
+      label: borough,
+      data: years.map((year) => grouped[borough]?.find((row) => row.year === year)?.median_rent ?? null),
+      borderColor: boroughPalette[borough] ?? '#38bdf8',
+      backgroundColor: withOpacity(boroughPalette[borough] ?? '#38bdf8', 0.35),
+      tension: 0.35,
+      pointRadius: 0,
+      spanGaps: true,
+      fill: false
+    };
+    return new Chart(ctx, {
+      type: 'line',
+      data: { labels: years, datasets: [dataset] },
+      options: {
+        ...chartDefaults(),
+        plugins: {
+          ...chartDefaults().plugins,
+          legend: { display: false },
+          tooltip: {
+            ...chartDefaults().plugins.tooltip,
+            callbacks: {
+              label: (context) => `$${Number(context.raw).toLocaleString()} (${context.label})`
+            }
           }
-        }
-      },
-      scales: {
-        ...chartDefaults().scales,
-        y: {
-          ...chartDefaults().scales.y,
-          ticks: {
-            ...chartDefaults().scales.y.ticks,
-            callback: (value) => `$${Number(value).toLocaleString()}`
+        },
+        scales: {
+          x: {
+            ...chartDefaults().scales.x,
+            ticks: {
+              ...chartDefaults().scales.x.ticks,
+              maxTicksLimit: 5,
+              autoSkipPadding: 16
+            }
+          },
+          y: {
+            ...chartDefaults().scales.y,
+            min: min * 0.95,
+            max: max * 1.05,
+            ticks: {
+              ...chartDefaults().scales.y.ticks,
+              callback: (value) => `$${Number(value).toLocaleString()}`,
+              maxTicksLimit: 4
+            }
           }
         }
       }
-    }
+    });
   });
-  return chartStore.line;
+  return chartStore.multiples;
 }
 
 export function initScatterChart(canvas, points) {
@@ -204,6 +226,20 @@ export function initScatterChart(canvas, points) {
     }
   });
   return chartStore.scatter;
+}
+
+export function updateScatterChart(chart, points) {
+  if (!chart) return;
+  const boroughs = [...new Set(points.map((point) => point.borough))];
+  chart.data.datasets = boroughs.map((borough) => ({
+    label: borough,
+    data: points.filter((point) => point.borough === borough),
+    parsing: false,
+    backgroundColor: withOpacity(boroughPalette[borough] ?? '#6366f1', 0.75),
+    borderColor: boroughPalette[borough] ?? '#6366f1',
+    borderWidth: 1.5
+  }));
+  chart.update();
 }
 
 export function initHeatmap(canvas, dataset) {
@@ -293,10 +329,24 @@ export function refreshThemes() {
     chartStore.bar.options.plugins.tooltip = defaults.plugins.tooltip;
     chartStore.bar.update();
   }
-  if (chartStore.line) {
-    chartStore.line.options.scales = defaults.scales;
-    chartStore.line.options.plugins.tooltip = defaults.plugins.tooltip;
-    chartStore.line.update();
+  if (chartStore.multiples?.length) {
+    chartStore.multiples.forEach((chart) => {
+      chart.options.scales = {
+        x: { ...defaults.scales.x, ticks: { ...defaults.scales.x.ticks, maxTicksLimit: 5, autoSkipPadding: 16 } },
+        y: {
+          ...defaults.scales.y,
+          min: chart.options.scales.y.min,
+          max: chart.options.scales.y.max,
+          ticks: {
+            ...defaults.scales.y.ticks,
+            maxTicksLimit: chart.options.scales.y.ticks.maxTicksLimit,
+            callback: (value) => `$${Number(value).toLocaleString()}`
+          }
+        }
+      };
+      chart.options.plugins.tooltip = defaults.plugins.tooltip;
+      chart.update();
+    });
   }
   if (chartStore.scatter) {
     chartStore.scatter.options.scales = defaults.scales;
