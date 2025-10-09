@@ -1,3 +1,5 @@
+-- NOTE: This file is illustrative. CI runs tools/run_sql.py using DuckDB's Python API.
+-- The CLI meta-commands (.mode/.output) aren't used in CI.
 -- DuckDB snapshot queries for reproducible tabular outputs.
 .mode csv
 .headers on
@@ -19,49 +21,32 @@ yoy AS (
 SELECT * FROM yoy ORDER BY borough, year;
 .output stdout
 
-.output data/duckdb_outputs/annual_rent_spread.csv
-WITH ordered AS (
-  SELECT year, borough, median_rent,
-         ROW_NUMBER() OVER (PARTITION BY year ORDER BY median_rent DESC) AS rent_rank
-  FROM read_csv_auto('data/nyc_median_rent.csv', header=True)
-)
+.output data/duckdb_outputs/disparity_by_year.csv
 SELECT
   year,
   MAX(median_rent) AS max_rent,
   MIN(median_rent) AS min_rent,
   MAX(median_rent) - MIN(median_rent) AS spread
-FROM ordered
+FROM read_csv_auto('data/nyc_median_rent.csv', header=True)
 GROUP BY year
 ORDER BY year;
 .output stdout
 
-.output data/duckdb_outputs/top_bottom_latest_year.csv
+.output data/duckdb_outputs/latest_leaderboard.csv
 WITH base AS (
   SELECT * FROM read_csv_auto('data/nyc_median_rent.csv', header=True)
 ),
 latest AS (
   SELECT MAX(year) AS latest_year FROM base
-),
-ranked AS (
-  SELECT
-    b.year,
-    b.borough,
-    b.median_rent,
-    b.median_income,
-    ROW_NUMBER() OVER (ORDER BY b.median_rent DESC) AS rent_rank,
-    ROW_NUMBER() OVER (ORDER BY b.median_rent ASC) AS rent_rank_bottom,
-    (SELECT latest_year FROM latest) AS latest_year
-  FROM base b
-  WHERE b.year = (SELECT latest_year FROM latest)
 )
 SELECT
-  latest_year AS year,
-  borough,
-  median_rent,
-  median_income,
-  CASE WHEN rent_rank <= 3 THEN 'top' ELSE 'bottom' END AS bucket,
-  rent_rank,
-  rent_rank_bottom
-FROM ranked
-ORDER BY bucket, rent_rank;
+  b.borough,
+  b.year,
+  b.median_rent,
+  b.median_income,
+  b.subway_access_score,
+  b.air_quality_index
+FROM base b, latest
+WHERE b.year = latest.latest_year
+ORDER BY b.median_rent DESC;
 .output stdout
