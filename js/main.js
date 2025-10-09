@@ -17,17 +17,30 @@ const state = {
   yoy: null,
   derivedPayload: null,
   records: [],
-  boroughMeta: {}
+  boroughMeta: {},
+  totalBoroughs: 0 // Stores dataset breadth for HUD copy changes.
 };
+
+let heatmapResizeBound = false;
+let heatmapResizeFrame = null;
+let activeNavTarget = null;
+let heroInsightTimer = null;
 
 const dataUrl = (file) => new URL(`../data/${file}`, import.meta.url).href;
 
 async function bootstrap() {
   initThemeToggle(document.querySelector('[data-theme-toggle]'));
+  document.body.classList.add('compact-mode');
+  initQuickNav();
+  initLayoutToggle();
+  observeSections();
+  initBackToTop();
+  initProgressBar();
 
   const { records, boroughMeta, baseSummary } = await loadAllData();
   state.records = records;
   state.boroughMeta = boroughMeta;
+  state.totalBoroughs = Object.keys(boroughMeta ?? {}).length;
   state.summary = summarize(records);
   state.yoy = state.summary.yoy;
   state.derivedPayload = buildSummaryPayload(baseSummary, state.summary);
@@ -35,6 +48,7 @@ async function bootstrap() {
   initialiseCharts(records);
   initialiseFilters(records);
   initialiseNarrative();
+  initHeroInsight();
   initialiseScrolly();
   bindDownloads();
   updateHUD(state.filters);
@@ -58,9 +72,9 @@ function initialiseCharts(records) {
   if (lineCtx) initLineChart(lineCtx, records);
   if (scatterCtx) initScatterChart(scatterCtx, records, Array.from(new Set(records.map((row) => row.borough))));
   if (heatmapCanvas) {
-    heatmapCanvas.width = heatmapCanvas.clientWidth * window.devicePixelRatio;
-    heatmapCanvas.height = 420 * window.devicePixelRatio;
     initHeatmap(heatmapCanvas, records, 'median_rent', state.yoy);
+    scheduleHeatmapResize();
+    bindHeatmapResize();
   }
 }
 
@@ -79,6 +93,7 @@ function initialiseFilters(records) {
       updateNarrativeList(filters);
       updateKeyTakeaways(filters);
       updateDerivedInsights(filters);
+      scheduleHeatmapResize();
     }
   });
 }
@@ -102,7 +117,7 @@ function initialiseScrolly() {
       if (indicator) indicator.textContent = index + 1;
     }
   });
-  revealOnScroll('.chart-card, .step');
+  revealOnScroll('.chart-card, .step, .chart-frame');
 }
 
 function bindDownloads() {
@@ -143,6 +158,184 @@ function triggerDownload(url, name) {
   document.body.removeChild(link);
 }
 
+function bindHeatmapResize() {
+  if (heatmapResizeBound) return;
+  heatmapResizeBound = true;
+  window.addEventListener('resize', () => scheduleHeatmapResize());
+}
+
+function scheduleHeatmapResize() {
+  if (heatmapResizeFrame) cancelAnimationFrame(heatmapResizeFrame);
+  heatmapResizeFrame = requestAnimationFrame(() => {
+    if (!state.records.length) return;
+    const metric = state.filters?.metric ?? 'median_rent';
+    const payload = metric === 'rent_growth' ? state.yoy : null;
+    updateHeatmap(state.records, metric, payload);
+    heatmapResizeFrame = null;
+  });
+}
+
+function initQuickNav() {
+  document.querySelectorAll('[data-scroll-target]').forEach((control) => {
+    control.addEventListener('click', (event) => {
+      const targetSelector = control.dataset.scrollTarget;
+      if (!targetSelector) return;
+      const target = document.querySelector(targetSelector);
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setActiveNav(targetSelector);
+    });
+  });
+}
+
+function initLayoutToggle() {
+  const toggle = document.querySelector('[data-layout-toggle]');
+  if (!toggle) return;
+  toggle.setAttribute('aria-pressed', String(document.body.classList.contains('compact-mode')));
+  toggle.addEventListener('click', () => {
+    const compact = document.body.classList.toggle('compact-mode');
+    toggle.setAttribute('aria-pressed', String(compact));
+    scheduleHeatmapResize();
+  });
+}
+
+function initBackToTop() {
+  const backTop = document.getElementById('back-top');
+  if (!backTop) return;
+  const toggleVisibility = () => {
+    if (window.scrollY > 320) {
+      backTop.classList.add('is-visible');
+    } else {
+      backTop.classList.remove('is-visible');
+    }
+  };
+  window.addEventListener('scroll', toggleVisibility, { passive: true });
+  toggleVisibility();
+  backTop.addEventListener('click', () =>
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  );
+}
+
+function initProgressBar() {
+  const bar = document.getElementById('progress-bar');
+  if (!bar) return;
+  const update = () => {
+    const maxScroll = document.body.scrollHeight - window.innerHeight;
+    const ratio = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+    bar.style.width = `${Math.min(100, Math.max(0, ratio * 100))}%`;
+  };
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  update();
+}
+
+function initHeroInsight() {
+  const valueNode = document.querySelector('[data-hero-insight-value]');
+  const labelNode = document.querySelector('[data-hero-insight-label]');
+  if (!valueNode || !labelNode || !state.summary) return;
+
+  if (heroInsightTimer) {
+    clearInterval(heroInsightTimer);
+    heroInsightTimer = null;
+  }
+
+  const insights = [];
+  const disparityEntries = Object.entries(state.summary.disparity ?? {});
+  if (disparityEntries.length) {
+    const latestSpreadYear = Math.max(...disparityEntries.map(([year]) => Number(year)));
+    const latestSpread = state.summary.disparity?.[latestSpreadYear];
+    if (latestSpread && Number.isFinite(latestSpread.spread)) {
+      insights.push({
+        value: `$${Math.round(latestSpread.spread).toLocaleString()}`,
+        label: `Rent spread across boroughs in ${latestSpreadYear}`
+      });
+    }
+  }
+
+  const growthEntries = Object.entries(state.summary.growth ?? {})
+    .filter(([, meta]) => meta && Number.isFinite(meta.pct))
+    .sort((a, b) => b[1].pct - a[1].pct);
+  if (growthEntries.length) {
+    const [borough, meta] = growthEntries[0];
+    insights.push({
+      value: `${meta.pct.toFixed(1)}%`,
+      label: `${borough} rent growth since ${meta.startYear}`
+    });
+  }
+
+  const transitR = state.summary.correlations?.rent_subway;
+  if (Number.isFinite(transitR)) {
+    insights.push({
+      value: transitR.toFixed(2),
+      label: 'Transit vs. rent correlation (r)'
+    });
+  }
+
+  const regressionR2 = state.summary.regression?.r2;
+  if (Number.isFinite(regressionR2)) {
+    insights.push({
+      value: regressionR2.toFixed(2),
+      label: 'Three-factor model R²'
+    });
+  }
+
+  if (!insights.length) {
+    insights.push({ value: 'Loading', label: 'Insights will appear shortly' });
+  }
+
+  let index = 0;
+  const render = () => {
+    const current = insights[index];
+    valueNode.textContent = current.value;
+    labelNode.textContent = current.label;
+  };
+
+  render();
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (reduceMotion.matches || insights.length === 1) {
+    return;
+  }
+
+  heroInsightTimer = window.setInterval(() => {
+    index = (index + 1) % insights.length;
+    render();
+  }, 1000);
+}
+
+function observeSections() {
+  const sections = document.querySelectorAll('[data-nav-section][id]');
+  if (!sections.length) return;
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (visible.length) {
+        setActiveNav(`#${visible[0].target.id}`);
+      }
+    },
+    {
+      rootMargin: '-40% 0px -50% 0px',
+      threshold: 0.2
+    }
+  );
+  sections.forEach((section) => observer.observe(section));
+}
+
+function setActiveNav(targetSelector) {
+  if (activeNavTarget === targetSelector) return;
+  activeNavTarget = targetSelector;
+  document.querySelectorAll('[data-scroll-target]').forEach((button) => {
+    if (button.dataset.scrollTarget === targetSelector) {
+      button.setAttribute('aria-current', 'true');
+    } else {
+      button.removeAttribute('aria-current');
+    }
+  });
+}
+
 function updateHUD(filters) {
   const yearTarget = document.querySelector('[data-hud-year]');
   const boroughTarget = document.querySelector('[data-hud-boroughs]');
@@ -151,11 +344,18 @@ function updateHUD(filters) {
 
   if (!filters) return;
   const year = filters.year;
-  const boroughs = filters.boroughs;
+  const boroughs = filters.boroughs?.length ? filters.boroughs : Object.keys(state.summary?.growth ?? {});
+  const boroughCount = boroughs.length;
   const metrics = latestMetrics(state.records, year, boroughs);
 
   if (yearTarget) yearTarget.textContent = year;
-  if (boroughTarget) boroughTarget.textContent = boroughs.join(', ');
+  if (boroughTarget) {
+    if (state.totalBoroughs && boroughCount === state.totalBoroughs) {
+      boroughTarget.textContent = 'All boroughs';
+    } else {
+      boroughTarget.textContent = boroughs.join(', ');
+    }
+  }
   if (spreadTarget && metrics.rank.length) {
     const top = metrics.rank[0];
     const bottom = metrics.rank[metrics.rank.length - 1];
