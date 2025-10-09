@@ -24,6 +24,7 @@ const state = {
 let heatmapResizeBound = false;
 let heatmapResizeFrame = null;
 let activeNavTarget = null;
+let heroInsightTimer = null;
 
 const dataUrl = (file) => new URL(`../data/${file}`, import.meta.url).href;
 
@@ -34,6 +35,7 @@ async function bootstrap() {
   initLayoutToggle();
   observeSections();
   initBackToTop();
+  initProgressBar();
 
   const { records, boroughMeta, baseSummary } = await loadAllData();
   state.records = records;
@@ -46,6 +48,7 @@ async function bootstrap() {
   initialiseCharts(records);
   initialiseFilters(records);
   initialiseNarrative();
+  initHeroInsight();
   initialiseScrolly();
   bindDownloads();
   updateHUD(state.filters);
@@ -114,7 +117,7 @@ function initialiseScrolly() {
       if (indicator) indicator.textContent = index + 1;
     }
   });
-  revealOnScroll('.chart-card, .step');
+  revealOnScroll('.chart-card, .step, .chart-frame');
 }
 
 function bindDownloads() {
@@ -212,6 +215,93 @@ function initBackToTop() {
   backTop.addEventListener('click', () =>
     window.scrollTo({ top: 0, behavior: 'smooth' })
   );
+}
+
+function initProgressBar() {
+  const bar = document.getElementById('progress-bar');
+  if (!bar) return;
+  const update = () => {
+    const maxScroll = document.body.scrollHeight - window.innerHeight;
+    const ratio = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+    bar.style.width = `${Math.min(100, Math.max(0, ratio * 100))}%`;
+  };
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  update();
+}
+
+function initHeroInsight() {
+  const valueNode = document.querySelector('[data-hero-insight-value]');
+  const labelNode = document.querySelector('[data-hero-insight-label]');
+  if (!valueNode || !labelNode || !state.summary) return;
+
+  if (heroInsightTimer) {
+    clearInterval(heroInsightTimer);
+    heroInsightTimer = null;
+  }
+
+  const insights = [];
+  const disparityEntries = Object.entries(state.summary.disparity ?? {});
+  if (disparityEntries.length) {
+    const latestSpreadYear = Math.max(...disparityEntries.map(([year]) => Number(year)));
+    const latestSpread = state.summary.disparity?.[latestSpreadYear];
+    if (latestSpread && Number.isFinite(latestSpread.spread)) {
+      insights.push({
+        value: `$${Math.round(latestSpread.spread).toLocaleString()}`,
+        label: `Rent spread across boroughs in ${latestSpreadYear}`
+      });
+    }
+  }
+
+  const growthEntries = Object.entries(state.summary.growth ?? {})
+    .filter(([, meta]) => meta && Number.isFinite(meta.pct))
+    .sort((a, b) => b[1].pct - a[1].pct);
+  if (growthEntries.length) {
+    const [borough, meta] = growthEntries[0];
+    insights.push({
+      value: `${meta.pct.toFixed(1)}%`,
+      label: `${borough} rent growth since ${meta.startYear}`
+    });
+  }
+
+  const transitR = state.summary.correlations?.rent_subway;
+  if (Number.isFinite(transitR)) {
+    insights.push({
+      value: transitR.toFixed(2),
+      label: 'Transit vs. rent correlation (r)'
+    });
+  }
+
+  const regressionR2 = state.summary.regression?.r2;
+  if (Number.isFinite(regressionR2)) {
+    insights.push({
+      value: regressionR2.toFixed(2),
+      label: 'Three-factor model R²'
+    });
+  }
+
+  if (!insights.length) {
+    insights.push({ value: 'Loading', label: 'Insights will appear shortly' });
+  }
+
+  let index = 0;
+  const render = () => {
+    const current = insights[index];
+    valueNode.textContent = current.value;
+    labelNode.textContent = current.label;
+  };
+
+  render();
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (reduceMotion.matches || insights.length === 1) {
+    return;
+  }
+
+  heroInsightTimer = window.setInterval(() => {
+    index = (index + 1) % insights.length;
+    render();
+  }, 1000);
 }
 
 function observeSections() {

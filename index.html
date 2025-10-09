@@ -43,7 +43,9 @@
     <script type="module" src="./js/main.js" defer></script>
   </head>
   <body data-page="index">
+    <div id="progress-bar" aria-hidden="true"></div>
     <a class="skip-link" href="#story">Skip to the insight narrative</a>
+    <a href="./assets/resume.pdf" class="floating-cta">📄 Resume</a>
     <p class="elevator-pitch">
       Exploring how income, transport, and environment reshape NYC’s rent dynamics — engineered and narrated by a data-first full-stack analyst.
     </p>
@@ -64,14 +66,18 @@
         <div class="hero-main">
           <div class="hero-topline">
             <img src="./assets/logo.svg" alt="InsightLab logo" class="hero-logo" />
+            <div class="hero-insight" aria-live="polite">
+              <span class="hero-insight-value" data-hero-insight-value>Loading…</span>
+              <span class="hero-insight-label" data-hero-insight-label>Preparing borough signals</span>
+            </div>
             <span class="eyebrow">Flagship case study · Jordan Chen</span>
           </div>
           <h1>InsightLab: NYC Housing Dynamics</h1>
           <p>
-            A narrative analytics experience tracing how affordability shifted across New York City’s boroughs from 2010–2024. Every interaction, chart, and insight mirrors the production stack I ship in practice.
+            New York’s affordability story is loud but rarely legible. I built InsightLab so hiring managers can see exactly how income, transit, and environment collide to shape rent pressure — all from a recruiter-speed narrative.
           </p>
           <p class="tagline">
-            Built end-to-end: ETL in PHP and PostgreSQL, spatial joins through GeoJSON, and a static deployment tuned for GitHub Pages — so hiring teams see both the analytical mind and the engineering finish.
+            I engineered the ETL in PHP and PostgreSQL, mapped borough context with GeoJSON, and deployed it as a static GitHub Pages experience so the storytelling polish mirrors the production stack I ship on the job.
           </p>
           <div class="hero-actions">
             <a class="btn-primary" href="./study.html">Explore the Study</a>
@@ -96,7 +102,7 @@
         <aside class="hero-aside" aria-label="Project spotlight">
           <h2>Why it stands out</h2>
           <p>
-            I treated housing volatility like a client engagement: framed the decision risk, engineered reliable data flows, and translated statistical evidence into an interactive story recruiters can skim or study.
+            I treated housing volatility like a client engagement: framed the decision risk, engineered reliable data flows, and translated statistical evidence into an interactive story anyone can skim or study.
           </p>
           <ul class="spotlight-list" role="list">
             <li><strong>Decision focus:</strong> Identify which levers — income, transit, environment — most explain rent pressure.</li>
@@ -115,6 +121,7 @@
         <li><button type="button" data-scroll-target="#rent-trajectories">Trends</button></li>
         <li><button type="button" data-scroll-target="#income-rent">Income vs. rent</button></li>
         <li><button type="button" data-scroll-target="#heatmap-insights">Heatmap</button></li>
+        <li><button type="button" data-scroll-target="#why-it-mattered">Why it mattered</button></li>
         <li><button type="button" data-scroll-target="#project-dossier">Dossier</button></li>
       </ul>
       <div class="story-nav-cta">
@@ -128,34 +135,42 @@
     <main id="story">
       <!-- Added recruiter-first narrative runway so the analytical story reads like a case interview answer. -->
       <section class="case-overview" id="case-overview" aria-labelledby="overview-title" data-nav-section>
+        <div class="section-banner"><span class="section-banner-icon" aria-hidden="true">🧭</span><span>Process</span></div>
         <div class="section-heading">
           <span class="eyebrow">Case narrative</span>
           <h2 id="overview-title">From affordability anxiety to actionable levers</h2>
-          <p class="text-block">
-            NYC’s affordability headlines lacked a borough-level signal recruiters could trust. I reframed the prompt into a structured journey — clarify the business pain, test hypotheses with data, and deliver a point of view executives can act on.
-          </p>
         </div>
-        <ol class="process-rail" aria-label="Problem to impact journey">
-          <li>
-            <h3>1 · Define the problem</h3>
-            <p>Interviewed housing policy notes and rental reports to scope the risk: mid-income renters were losing ground despite recovery.</p>
-          </li>
-          <li>
-            <h3>2 · Engineer trustworthy data</h3>
-            <p>Automated borough-level extracts, normalized rent + ACS income, and stitched transit/environment markers for context.</p>
-          </li>
-          <li>
-            <h3>3 · Model and pressure-test</h3>
-            <p>Ran YoY growth, regression, and correlation diagnostics to isolate which factors drove divergence.</p>
-          </li>
-          <li>
-            <h3>4 · Communicate the story</h3>
-            <p>Designed scrollytelling, narrative HUD, and downloadable evidence so non-technical reviewers stay oriented.</p>
-          </li>
-        </ol>
+        <details class="fold" open>
+          <summary>Why the brief needed reframing</summary>
+          <p class="text-block">
+            NYC’s affordability headlines were noisy, but none translated to a borough-level signal a hiring manager could trust. I reframed the brief into a consulting-style journey — clarify the decision risk, test the “why” with data, and surface an insight a recruiter can repeat in an interview.
+          </p>
+        </details>
+        <details class="fold" open>
+          <summary>How I structured the engagement</summary>
+          <ol class="process-rail" aria-label="Problem to impact journey">
+            <li>
+              <h3>1 · Define the problem</h3>
+              <p>I combed policy notes and rental reports to pinpoint the friction: middle-income renters were losing ground even as the city recovered.</p>
+            </li>
+            <li>
+              <h3>2 · Engineer trustworthy data</h3>
+              <p>I automated borough-level extracts, normalized rent + ACS income, and stitched transit/environment markers so every insight stayed grounded.</p>
+            </li>
+            <li>
+              <h3>3 · Model and pressure-test</h3>
+              <p>I ran YoY growth, regression, and correlation diagnostics to isolate the levers that actually drove divergence.</p>
+            </li>
+            <li>
+              <h3>4 · Communicate the story</h3>
+              <p>I designed scrollytelling, a narrative HUD, and downloadable evidence so even non-technical reviewers could stay oriented.</p>
+            </li>
+          </ol>
+        </details>
       </section>
 
       <section class="executive-summary" aria-labelledby="summary-title" data-nav-section>
+        <div class="section-banner"><span class="section-banner-icon" aria-hidden="true">⚡</span><span>Executive takeaways</span></div>
         <div class="section-heading">
           <span class="eyebrow">Executive summary</span>
           <h2 id="summary-title">The three beats recruiters should know</h2>
@@ -169,6 +184,7 @@
       </section>
 
       <section class="visual-summary" aria-labelledby="visual-summary-title" data-nav-section>
+        <div class="section-banner"><span class="section-banner-icon" aria-hidden="true">🗂️</span><span>Navigation</span></div>
         <div class="section-heading">
           <span class="eyebrow">Visual shortcuts</span>
           <h2 id="visual-summary-title">Jump to the insight you need</h2>
@@ -221,9 +237,16 @@
             <span class="visual-thumb-meta">Rent &amp; YoY growth</span>
           </button>
         </div>
+        <ul class="summary-list" role="list" aria-live="polite">
+          <li data-summary-item="0">Loading growth insight…</li>
+          <li data-summary-item="1">Loading spread insight…</li>
+          <li data-summary-item="2">Loading correlation insight…</li>
+        </ul>
+        <p class="summary-footnote">All statements refresh as you explore the filters below — demonstrating how I couple storytelling with responsive analytics.</p>
       </section>
 
       <section aria-labelledby="filters-title" class="filters-section" id="filters" data-nav-section>
+        <div class="section-banner"><span class="section-banner-icon" aria-hidden="true">🎛️</span><span>Controls</span></div>
         <div class="section-heading">
           <span class="eyebrow">Control the lens</span>
           <h2 id="filters-title">Dial in the view</h2>
@@ -231,46 +254,53 @@
         <p class="text-block">
           Use the controls to focus on the years, boroughs, and metrics that matter for your decision. All visuals and narratives update instantly, so the story follows your context.
         </p>
-        <div class="filters" role="region" aria-label="Interactive filters">
-          <div class="filter-group">
-            <label for="filter-year">Year: <span data-year-label></span></label>
-            <input id="filter-year" type="range" step="1" aria-valuemin="2010" aria-valuemax="2024" aria-valuenow="2024" />
-          </div>
-          <div class="filter-group">
-            <label for="filter-borough">Boroughs</label>
-            <select id="filter-borough" multiple size="5" aria-label="Select boroughs"></select>
-          </div>
-          <div class="filter-group">
-            <label>Heatmap metric</label>
-            <div role="radiogroup" aria-label="Heatmap metric">
-              <label class="inline-flex items-center gap-2">
-                <input type="radio" name="metric" value="median_rent" checked />
-                <span>Median rent</span>
-              </label>
-              <label class="inline-flex items-center gap-2 mt-2">
-                <input type="radio" name="metric" value="rent_growth" />
-                <span>YoY rent %</span>
-              </label>
+        <details class="fold" open>
+          <summary>Adjust the dataset in seconds</summary>
+          <div class="filters" role="region" aria-label="Interactive filters">
+            <div class="filter-group">
+              <label for="filter-year">Year: <span data-year-label></span></label>
+              <input id="filter-year" type="range" step="1" aria-valuemin="2010" aria-valuemax="2024" aria-valuenow="2024" />
+            </div>
+            <div class="filter-group">
+              <label for="filter-borough">Boroughs</label>
+              <select id="filter-borough" multiple size="5" aria-label="Select boroughs"></select>
+            </div>
+            <div class="filter-group">
+              <label>Heatmap metric</label>
+              <div role="radiogroup" aria-label="Heatmap metric">
+                <label class="inline-flex items-center gap-2">
+                  <input type="radio" name="metric" value="median_rent" checked />
+                  <span>Median rent</span>
+                </label>
+                <label class="inline-flex items-center gap-2 mt-2">
+                  <input type="radio" name="metric" value="rent_growth" />
+                  <span>YoY rent %</span>
+                </label>
+              </div>
+            </div>
+            <div class="filter-group">
+              <label for="filter-reset">Reset view</label>
+              <button id="filter-reset" class="reset-button">
+                <img src="./assets/icons/reset.svg" alt="Reset icon" width="18" height="18" />
+                Reset filters
+              </button>
             </div>
           </div>
-          <div class="filter-group">
-            <label for="filter-reset">Reset view</label>
-            <button id="filter-reset" class="reset-button">
-              <img src="./assets/icons/reset.svg" alt="Reset icon" width="18" height="18" />
-              Reset filters
-            </button>
-          </div>
-        </div>
+        </details>
       </section>
 
       <section class="scrolly-container" aria-label="Rent story" id="rent-story" data-nav-section>
+        <div class="section-banner"><span class="section-banner-icon" aria-hidden="true">📊</span><span>Rent story</span></div>
         <div class="scrolly-sticky" aria-hidden="true">
           <article class="chart-card" aria-label="Median rent per borough">
             <h4>Median rent leaderboard</h4>
             <p class="chart-summary" data-dynamic-narrative></p>
-            <div class="chart-frame">
-              <canvas id="chart-bar" aria-label="Bar chart of median rent by borough"></canvas>
-            </div>
+            <figure class="chart-figure">
+              <div class="chart-frame">
+                <canvas id="chart-bar" aria-label="Bar chart of median rent by borough"></canvas>
+              </div>
+              <figcaption class="chart-caption"><strong>What this shows:</strong> Brooklyn’s median rent has surged since 2010, closing the gap with Manhattan to roughly a $1.1K spread — proof the borough’s growth story is tangible.</figcaption>
+            </figure>
             <div class="key-takeaway" data-takeaway="bar">Loading rent takeaway…</div>
           </article>
         </div>
@@ -309,45 +339,66 @@
       </section>
 
       <section aria-labelledby="trend-title" id="rent-trajectories" data-nav-section>
+        <div class="section-banner"><span class="section-banner-icon" aria-hidden="true">📈</span><span>Long-view trend</span></div>
         <div class="chart-card">
           <h4 id="trend-title">Rent trajectories 2010–2024</h4>
           <p class="chart-summary">
             From 2010 to 2024, the median rent grew 32%, outpacing income by 11% citywide. Toggle boroughs to isolate the slope driving that divergence.
           </p>
-          <div class="chart-frame">
-            <canvas id="chart-line"></canvas>
-          </div>
+          <figure class="chart-figure">
+            <div class="chart-frame">
+              <canvas id="chart-line"></canvas>
+            </div>
+            <figcaption class="chart-caption"><strong>What this shows:</strong> The slopes reveal rent climbing faster than income after 2013, with boroughs like Brooklyn and Queens bending sharply upward through recovery.</figcaption>
+          </figure>
           <div class="key-takeaway" data-takeaway="line">Loading trajectory takeaway…</div>
         </div>
       </section>
 
       <section aria-labelledby="scatter-title" id="income-rent" data-nav-section>
+        <div class="section-banner"><span class="section-banner-icon" aria-hidden="true">🔗</span><span>Correlation view</span></div>
         <div class="chart-card">
           <h4 id="scatter-title">Income vs rent positioning</h4>
           <p class="chart-summary">
             Bubble size represents subway access. Hover to see borough-year combinations and how transit and environment link to rent levels.
           </p>
-          <div class="chart-frame">
-            <canvas id="chart-scatter"></canvas>
-          </div>
+          <figure class="chart-figure">
+            <div class="chart-frame">
+              <canvas id="chart-scatter"></canvas>
+            </div>
+            <figcaption class="chart-caption"><strong>What this shows:</strong> Transit-rich borough-years cluster in the top-right — an r≈0.7 correlation that proves subway proximity is a measurable rent premium.</figcaption>
+          </figure>
           <div class="key-takeaway" data-takeaway="scatter">Loading correlation takeaway…</div>
         </div>
       </section>
 
       <section aria-labelledby="heatmap-title" id="heatmap-insights" data-nav-section>
+        <div class="section-banner"><span class="section-banner-icon" aria-hidden="true">🌡️</span><span>Heatmap pulses</span></div>
         <div class="chart-card">
           <h4 id="heatmap-title">Heatmap: rent and growth pulses</h4>
           <p class="chart-summary">
-            Switch between median rent and year-over-year change to see when each borough accelerates or pauses.
+            Track how each borough’s rent and YoY growth evolve across the full timeline. Switch to YoY rent % to surface turning points.
           </p>
-          <div class="chart-frame">
-            <canvas id="chart-heatmap" class="heatmap" role="img" aria-label="Heatmap of rent dynamics"></canvas>
-          </div>
+          <figure class="chart-figure">
+            <div class="chart-frame">
+              <canvas id="chart-heatmap" class="heatmap" role="img" aria-label="Heatmap of rent dynamics"></canvas>
+            </div>
+            <figcaption class="chart-caption"><strong>What this shows:</strong> The matrix spotlights the 2012 and 2021 surges — and the 2020 pullback — so you can instantly see when pressure flared or cooled.</figcaption>
+          </figure>
           <div class="key-takeaway" data-takeaway="heatmap">Loading heatmap takeaway…</div>
         </div>
       </section>
 
+      <section class="why-it-mattered" aria-labelledby="why-title" id="why-it-mattered" data-nav-section>
+        <div class="section-banner"><span class="section-banner-icon" aria-hidden="true">🌆</span><span>Why it mattered</span></div>
+        <h2 id="why-title">Why this analysis matters</h2>
+        <p>
+          Behind every percentage point is a family deciding whether they can stay in New York. Walking through this case made me quantify the stakes: rent spreads aren’t abstractions — they’re the storylines teams use to prioritise investment and equity.
+        </p>
+      </section>
+
       <section aria-labelledby="derived-title" class="derived-insights" data-nav-section>
+        <div class="section-banner"><span class="section-banner-icon" aria-hidden="true">🧠</span><span>Analyst POV</span></div>
         <h2 id="derived-title">Derived Insights</h2>
         <p data-derived="transit">Loading transit insight…</p>
         <p data-derived="regression">Loading regression insight…</p>
@@ -355,6 +406,7 @@
       </section>
  
       <section class="project-dossier" id="project-dossier" aria-labelledby="project-dossier-title" data-nav-section>
+        <div class="section-banner"><span class="section-banner-icon" aria-hidden="true">📁</span><span>Dossier</span></div>
         <div class="section-heading">
           <span class="eyebrow">Project dossier</span>
           <h2 id="project-dossier-title">Key outcomes, stack, and next bets</h2>
