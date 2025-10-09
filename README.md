@@ -1,35 +1,72 @@
 # InsightLab: NYC Housing Dynamics
 
-**Tagline:** “How income, transport, and environment shape rent trends.”
+[![Build & Deploy (Pages)](https://github.com/<user>/<repo>/actions/workflows/build-and-deploy.yml/badge.svg)](https://github.com/<user>/<repo>/actions/workflows/build-and-deploy.yml)
+[![Nightly Refresh](https://github.com/<user>/<repo>/actions/workflows/nightly-refresh.yml/badge.svg)](https://github.com/<user>/<repo>/actions/workflows/nightly-refresh.yml)
 
+**Tagline:** “How income, transport, and environment shape rent trends.”  
 **Elevator pitch:** Exploring how income, transport, and environment shaped NYC’s rent dynamics — built from scratch by a data-driven backend developer.
 
 ## Live demo
 Host the repository with GitHub Pages (Settings → Pages → Deploy from branch → `main` / `/`), then open `https://<your-username>.github.io/insightlab-nyc-housing/`.
 
-## Screenshots
-- Landing hero + scrollytelling (placeholder — capture after deployment).
-- Study page executive summary (placeholder — capture after deployment).
+## Reproducibility workflow
+A minimal Python + DuckDB toolchain regenerates all derived assets before deployment.
 
-## Dataset & licensing
-- `data/nyc_median_rent.csv` is a replicated snapshot referencing NYC Open Data HPD datasets and ACS medians for 2010–2024. See `/notebooks/methodology.md` for citations and replication notes.
-- `data/nyc_borough_meta.json` stores supporting borough metadata sourced from NYC Planning fact sheets.
-- `/js/embeddedData.js` mirrors the CSV/JSON payloads so the experience keeps working when opened straight from disk (no CORS surprises).
-- Output is provided under the MIT License. Upstream data remains governed by the respective agency licenses.
+| Command | Description |
+| --- | --- |
+| `python -m pip install -r requirements.txt` | Install the pinned analysis stack (pandas, numpy, scipy, statsmodels, duckdb, matplotlib, seaborn). |
+| `make derive` | Build `data/derived_summary.json`, `data/viz_payload.json`, and `appendix/ols_report.md`. |
+| `make validate` | Run schema/range assertions on `data/nyc_median_rent.csv`. |
+| `make sql` | Execute `sql/examples.sql` to refresh `data/duckdb_outputs/*.csv`. |
+| `make figures` | Produce regression diagnostics in `appendix/figures/*.png`. |
+| `make all` | Run derive → validate → sql → figures in one shot. |
+| `make site` | Bundle the static site (including generated artifacts) into `./site/` for GitHub Pages. |
+| `make clean` | Remove build artifacts (`site/`, `data/duckdb_outputs/`, `appendix/figures/`). |
 
-## Tech & Data stack
-- **Pipeline:** PHP ETL services hydrate PostgreSQL schemas with GeoJSON overlays before exporting the static snapshot shipped here.
-- **Visualization:** D3.js patterns informed the interaction design; this static build relies on Chart.js, Canvas heatmaps, and vanilla JS modules for GitHub Pages compatibility.
-- **Sources:** NYC Open Data (HPD, DOHMH), U.S. Census ACS API, and borough fact sheets underpin the replicated metrics.
+The CI workflows (`.github/workflows/*.yml`) call `make all` followed by `make site`, guaranteeing the live site always reflects the latest pipeline output.
 
-## Analytical methods
-- **Trend analysis:** Rent growth between 2010 and 2024 plus year-over-year deltas per borough.
-- **Cross-sectional ranking:** Latest year medians with auto-calculated spread and leaderboard.
-- **Correlations:** Pearson r for rent vs income, subway access, and air quality (with transit correlation squared to surface variance explained).
-- **Regression:** Closed-form OLS for the latest five-year window: `rent ~ β0 + β1*income + β2*subway + β3*(100 - AQI)`.
-- **Derived insights:** Dynamic callouts quantify that subway access alone explains ~40% of rent variance and that the three-factor model reaches R² ≈ 0.74.
-- **Disparity index:** Spread between highest and lowest borough medians by year.
-- **Narrative engine:** Generates executive summary bullets, dynamic captions, key takeaway cards, and caveats tied to current filters.
+## Data dictionary
+| Field | Type | Description |
+| --- | --- | --- |
+| `year` | int | Calendar year of the observation (2010–2024). |
+| `borough` | string | NYC borough label. |
+| `median_rent` | float | Monthly median asking rent in USD. |
+| `median_income` | float | Annual median household income in USD. |
+| `subway_access_score` | float | 0–100 composite index summarising subway proximity/frequency. |
+| `air_quality_index` | float | NYC DOHMH AQI analogue (lower is cleaner air). |
+
+Supporting metadata lives in `data/nyc_borough_meta.json` and powers narrative/tooltips. See `notebooks/methodology.md` for replication and sourcing notes.
+
+## Methods appendix & diagnostics
+- `appendix/ols_report.md` — markdown report of OLS coefficients (β, SE, t, p, 95% CI), fit statistics, VIF, and Breusch–Pagan test.
+- `appendix/figures/residuals.png` — residuals vs fitted.
+- `appendix/figures/qq.png` — QQ plot of residuals.
+- `appendix/figures/influence.png` — leverage vs Cook’s distance.
+- `appendix/figures/corr_matrix.png` — correlation heatmap.
+
+All figures are generated via `tools/figures.py` and automatically packaged into the static site.
+
+## SQL snapshots
+`sql/examples.sql` issues a trio of DuckDB queries that write CSVs to `data/duckdb_outputs/`:
+- `median_rent_yoy.csv` — year-over-year rent deltas by borough.
+- `annual_rent_spread.csv` — annual max/min rent spread summary.
+- `top_bottom_latest_year.csv` — leaderboard of top/bottom boroughs in the latest year.
+
+These tables provide auditable checkpoints for BI/warehouse consumers.
+
+## Output artifacts shipped with the site
+- `data/derived_summary.json` — correlations, regression diagnostics, disparity index, generated headlines.
+- `data/viz_payload.json` — pre-aggregated series powering charts when CSV fetches are unavailable.
+- `appendix/ols_report.md` & `appendix/figures/*.png` — linked directly from every chart caption.
+
+The front-end prefers these JSON payloads but gracefully falls back to the embedded CSV snapshot for offline use.
+
+## Quickstart (local)
+1. `python -m pip install -r requirements.txt`
+2. `make site`
+3. Open `site/index.html` (and optionally `site/study.html`) in a modern browser.
+
+If you only need the exploratory view, you can still open `index.html` directly; the embedded dataset mirrors the pipeline outputs for offline scenarios.
 
 ## Architecture
 ```
@@ -39,40 +76,40 @@ insightlab-nyc-housing/
 ├── data/
 │   ├── nyc_median_rent.csv     # Replicated dataset snapshot
 │   ├── nyc_borough_meta.json   # Supporting metadata
-│   └── derived_summary.json    # Template populated client-side
-├── js/
-│   ├── main.js                 # Bootstrap, filters, orchestration
-│   ├── dataLoader.js           # Papa Parse CSV + JSON fetch
-│   ├── analysis.js             # Aggregations, Pearson r, OLS
-│   ├── charts.js               # Chart.js configs + heatmap painter
-│   ├── narrative.js            # Auto-insight copy
-│   ├── filters.js              # Year slider, borough multi-select, metric toggle
-│   ├── scrolly.js              # Intersection observers for storytelling
-│   └── theme.js                # Dark/light toggle with persistence
-├── css/
-│   ├── style.css               # Core styling, layout, variables
-│   └── animations.css          # Reveal and fade animations
-├── assets/                     # Logo, inline icons (hero gradient rendered in CSS)
-├── notebooks/methodology.md    # Replication log + formulas
-├── README.md
-└── LICENSE
+│   ├── derived_summary.json    # Pipeline-derived summary payload
+│   └── viz_payload.json        # Chart-ready series emitted by derive.py
+├── data/duckdb_outputs/        # DuckDB CSV snapshots (make sql)
+├── tools/
+│   ├── derive.py               # Builds derived JSON + OLS appendix
+│   ├── validate.py             # Schema/range checks
+│   └── figures.py              # Diagnostic matplotlib/seaborn plots
+├── sql/examples.sql            # DuckDB queries executed in CI/local runs
+├── appendix/
+│   ├── ols_report.md           # Markdown appendix (regenerated)
+│   └── figures/                # Residual, QQ, leverage, correlation visuals
+├── js/                         # Client-side orchestration + analysis modules
+├── css/                        # Styling + animation layers
+├── assets/                     # Logos and icons
+├── notebooks/methodology.md    # Replication log & citations
+├── Makefile                    # Reproducible pipeline entry points
+└── requirements.txt            # Python dependencies for the toolchain
 ```
 
-## Running locally
-1. Clone the repository.
-2. Open `index.html` directly in a modern browser (no build step required).
-3. If the browser blocks local fetches, the embedded dataset automatically kicks in so visuals still render.
-4. To refresh with a new CSV, replace `data/nyc_median_rent.csv` and ensure the headers match exactly; the site will re-calculate on load.
+## CI/CD
+- **Build & Deploy (Pages):** triggers on every push to `main` and publishes `site/` to GitHub Pages.
+- **Nightly Refresh:** runs weekly (Sunday 03:00 UTC) to rerun the pipeline against the latest CSV, refresh derived assets, and redeploy.
 
-## Replacing the dataset
-- Export updated medians from NYC Open Data (CSV) with fields matching the existing schema.
-- Adjust `median_income`, `subway_access_score`, and `air_quality_index` columns to maintain numeric types.
-- Optional: update `data/nyc_borough_meta.json` for new notes or population estimates.
+Both workflows rely on the `make` targets documented above so local and remote executions stay in lockstep.
+
+## Dataset & licensing
+- `data/nyc_median_rent.csv` is a replicated snapshot referencing NYC Open Data HPD datasets and ACS medians for 2010–2024.
+- `data/nyc_borough_meta.json` stores supporting borough metadata sourced from NYC Planning fact sheets.
+- Output is provided under the MIT License. Upstream data remains governed by the respective agency licenses.
 
 ## What this demonstrates
-- **Analytical rigor:** Multi-year growth, correlation, and regression analysis performed client-side with reproducible formulas.
-- **Developer craftsmanship:** Modular vanilla JS, Chart.js visualisations, Tailwind-backed styling, and scrollytelling interactions that work offline.
-- **Storytelling:** Dynamic executive summaries, contextual HUD, and narrative captions that adapt to the reader’s filters.
+- **Analytical rigor:** Multi-year growth, correlation, regression, and diagnostics refreshed through a reproducible Python + DuckDB pipeline.
+- **Developer craftsmanship:** Modular vanilla JS, Chart.js visualisations, Canvas heatmap, and a CI/CD path to GitHub Pages.
+- **Storytelling:** Dynamic executive summaries, contextual HUD, chart captions, and a linked diagnostics appendix for credibility.
 
 ## Credits
 - Dataset inspiration: NYC Open Data, U.S. Census ACS, MTA, DOHMH.

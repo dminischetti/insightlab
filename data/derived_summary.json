@@ -1,138 +1,665 @@
 {
-  "generated_at": "2025-10-08T20:40:39Z",
+  "generated_at": "2025-10-09T18:18:12.059009Z",
   "latest_year": 2024,
   "rent_growth": {
     "Bronx": {
       "startYear": 2010,
       "endYear": 2024,
-      "startValue": 1000,
-      "endValue": 1800,
-      "absolute": 800,
+      "startValue": 1000.0,
+      "endValue": 1800.0,
+      "absolute": 800.0,
       "pct": 80.0
     },
     "Brooklyn": {
       "startYear": 2010,
       "endYear": 2024,
-      "startValue": 1500,
-      "endValue": 2800,
-      "absolute": 1300,
+      "startValue": 1500.0,
+      "endValue": 2800.0,
+      "absolute": 1300.0,
       "pct": 86.66666666666667
     },
     "Manhattan": {
       "startYear": 2010,
       "endYear": 2024,
-      "startValue": 2200,
-      "endValue": 3600,
-      "absolute": 1400,
+      "startValue": 2200.0,
+      "endValue": 3600.0,
+      "absolute": 1400.0,
       "pct": 63.63636363636363
     },
     "Queens": {
       "startYear": 2010,
       "endYear": 2024,
-      "startValue": 1400,
-      "endValue": 2500,
-      "absolute": 1100,
+      "startValue": 1400.0,
+      "endValue": 2500.0,
+      "absolute": 1100.0,
       "pct": 78.57142857142857
     },
     "Staten Island": {
       "startYear": 2010,
       "endYear": 2024,
-      "startValue": 1300,
-      "endValue": 2100,
-      "absolute": 800,
+      "startValue": 1300.0,
+      "endValue": 2100.0,
+      "absolute": 800.0,
       "pct": 61.53846153846154
     }
   },
+  "income_growth": {
+    "Bronx": {
+      "startYear": 2010,
+      "endYear": 2024,
+      "startValue": 45000.0,
+      "endValue": 65000.0,
+      "absolute": 20000.0,
+      "pct": 44.44444444444444
+    },
+    "Brooklyn": {
+      "startYear": 2010,
+      "endYear": 2024,
+      "startValue": 62000.0,
+      "endValue": 92000.0,
+      "absolute": 30000.0,
+      "pct": 48.38709677419355
+    },
+    "Manhattan": {
+      "startYear": 2010,
+      "endYear": 2024,
+      "startValue": 82000.0,
+      "endValue": 115000.0,
+      "absolute": 33000.0,
+      "pct": 40.243902439024396
+    },
+    "Queens": {
+      "startYear": 2010,
+      "endYear": 2024,
+      "startValue": 60000.0,
+      "endValue": 85000.0,
+      "absolute": 25000.0,
+      "pct": 41.66666666666667
+    },
+    "Staten Island": {
+      "startYear": 2010,
+      "endYear": 2024,
+      "startValue": 70000.0,
+      "endValue": 88000.0,
+      "absolute": 18000.0,
+      "pct": 25.71428571428571
+    }
+  },
+  "yoy": {
+    "Bronx": [
+      {
+        "year": 2010,
+        "rent": 1000.0,
+        "pct": null
+      },
+      {
+        "year": 2011,
+        "rent": 1057.0,
+        "pct": 5.7
+      },
+      {
+        "year": 2012,
+        "rent": 1114.0,
+        "pct": 5.392620624408704
+      },
+      {
+        "year": 2013,
+        "rent": 1171.0,
+        "pct": 5.11669658886894
+      },
+      {
+        "year": 2014,
+        "rent": 1254.0,
+        "pct": 7.087959009393681
+      },
+      {
+        "year": 2015,
+        "rent": 1286.0,
+        "pct": 2.5518341307814993
+      },
+      {
+        "year": 2016,
+        "rent": 1343.0,
+        "pct": 4.432348367029549
+      },
+      {
+        "year": 2017,
+        "rent": 1400.0,
+        "pct": 4.244229337304542
+      },
+      {
+        "year": 2018,
+        "rent": 1457.0,
+        "pct": 4.071428571428572
+      },
+      {
+        "year": 2019,
+        "rent": 1514.0,
+        "pct": 3.912148249828414
+      },
+      {
+        "year": 2020,
+        "rent": 1531.0,
+        "pct": 1.1228533685601056
+      },
+      {
+        "year": 2021,
+        "rent": 1629.0,
+        "pct": 6.401045068582626
+      },
+      {
+        "year": 2022,
+        "rent": 1686.0,
+        "pct": 3.4990791896869244
+      },
+      {
+        "year": 2023,
+        "rent": 1743.0,
+        "pct": 3.3807829181494666
+      },
+      {
+        "year": 2024,
+        "rent": 1800.0,
+        "pct": 3.2702237521514634
+      }
+    ],
+    "Brooklyn": [
+      {
+        "year": 2010,
+        "rent": 1500.0,
+        "pct": null
+      },
+      {
+        "year": 2011,
+        "rent": 1593.0,
+        "pct": 6.2
+      },
+      {
+        "year": 2012,
+        "rent": 1666.0,
+        "pct": 4.58254865034526
+      },
+      {
+        "year": 2013,
+        "rent": 1779.0,
+        "pct": 6.782713085234093
+      },
+      {
+        "year": 2014,
+        "rent": 1871.0,
+        "pct": 5.171444631815627
+      },
+      {
+        "year": 2015,
+        "rent": 1964.0,
+        "pct": 4.970603955104223
+      },
+      {
+        "year": 2016,
+        "rent": 2057.0,
+        "pct": 4.7352342158859475
+      },
+      {
+        "year": 2017,
+        "rent": 2150.0,
+        "pct": 4.521147301895965
+      },
+      {
+        "year": 2018,
+        "rent": 2243.0,
+        "pct": 4.325581395348837
+      },
+      {
+        "year": 2019,
+        "rent": 2336.0,
+        "pct": 4.146232724030317
+      },
+      {
+        "year": 2020,
+        "rent": 2369.0,
+        "pct": 1.4126712328767121
+      },
+      {
+        "year": 2021,
+        "rent": 2521.0,
+        "pct": 6.416209371042634
+      },
+      {
+        "year": 2022,
+        "rent": 2614.0,
+        "pct": 3.6890122967076557
+      },
+      {
+        "year": 2023,
+        "rent": 2707.0,
+        "pct": 3.5577658760520277
+      },
+      {
+        "year": 2024,
+        "rent": 2800.0,
+        "pct": 3.4355374953823423
+      }
+    ],
+    "Manhattan": [
+      {
+        "year": 2010,
+        "rent": 2200.0,
+        "pct": null
+      },
+      {
+        "year": 2011,
+        "rent": 2300.0,
+        "pct": 4.545454545454546
+      },
+      {
+        "year": 2012,
+        "rent": 2400.0,
+        "pct": 4.3478260869565215
+      },
+      {
+        "year": 2013,
+        "rent": 2500.0,
+        "pct": 4.166666666666666
+      },
+      {
+        "year": 2014,
+        "rent": 2600.0,
+        "pct": 4.0
+      },
+      {
+        "year": 2015,
+        "rent": 2700.0,
+        "pct": 3.8461538461538463
+      },
+      {
+        "year": 2016,
+        "rent": 2770.0,
+        "pct": 2.5925925925925926
+      },
+      {
+        "year": 2017,
+        "rent": 2900.0,
+        "pct": 4.693140794223827
+      },
+      {
+        "year": 2018,
+        "rent": 3000.0,
+        "pct": 3.4482758620689653
+      },
+      {
+        "year": 2019,
+        "rent": 3100.0,
+        "pct": 3.3333333333333335
+      },
+      {
+        "year": 2020,
+        "rent": 3120.0,
+        "pct": 0.6451612903225806
+      },
+      {
+        "year": 2021,
+        "rent": 3280.0,
+        "pct": 5.128205128205128
+      },
+      {
+        "year": 2022,
+        "rent": 3400.0,
+        "pct": 3.6585365853658534
+      },
+      {
+        "year": 2023,
+        "rent": 3500.0,
+        "pct": 2.941176470588235
+      },
+      {
+        "year": 2024,
+        "rent": 3600.0,
+        "pct": 2.857142857142857
+      }
+    ],
+    "Queens": [
+      {
+        "year": 2010,
+        "rent": 1400.0,
+        "pct": null
+      },
+      {
+        "year": 2011,
+        "rent": 1479.0,
+        "pct": 5.642857142857142
+      },
+      {
+        "year": 2012,
+        "rent": 1557.0,
+        "pct": 5.273833671399594
+      },
+      {
+        "year": 2013,
+        "rent": 1651.0,
+        "pct": 6.0372511239563265
+      },
+      {
+        "year": 2014,
+        "rent": 1714.0,
+        "pct": 3.815869170199879
+      },
+      {
+        "year": 2015,
+        "rent": 1793.0,
+        "pct": 4.609101516919487
+      },
+      {
+        "year": 2016,
+        "rent": 1871.0,
+        "pct": 4.350250976017847
+      },
+      {
+        "year": 2017,
+        "rent": 1950.0,
+        "pct": 4.222340994120791
+      },
+      {
+        "year": 2018,
+        "rent": 2029.0,
+        "pct": 4.051282051282051
+      },
+      {
+        "year": 2019,
+        "rent": 2107.0,
+        "pct": 3.8442582552981768
+      },
+      {
+        "year": 2020,
+        "rent": 2136.0,
+        "pct": 1.3763644992880872
+      },
+      {
+        "year": 2021,
+        "rent": 2264.0,
+        "pct": 5.992509363295881
+      },
+      {
+        "year": 2022,
+        "rent": 2343.0,
+        "pct": 3.489399293286219
+      },
+      {
+        "year": 2023,
+        "rent": 2421.0,
+        "pct": 3.329065300896287
+      },
+      {
+        "year": 2024,
+        "rent": 2500.0,
+        "pct": 3.2631144155307727
+      }
+    ],
+    "Staten Island": [
+      {
+        "year": 2010,
+        "rent": 1300.0,
+        "pct": null
+      },
+      {
+        "year": 2011,
+        "rent": 1357.0,
+        "pct": 4.384615384615385
+      },
+      {
+        "year": 2012,
+        "rent": 1414.0,
+        "pct": 4.200442151805453
+      },
+      {
+        "year": 2013,
+        "rent": 1471.0,
+        "pct": 4.031117397454031
+      },
+      {
+        "year": 2014,
+        "rent": 1529.0,
+        "pct": 3.9428959891230457
+      },
+      {
+        "year": 2015,
+        "rent": 1586.0,
+        "pct": 3.727926749509483
+      },
+      {
+        "year": 2016,
+        "rent": 1643.0,
+        "pct": 3.5939470365699875
+      },
+      {
+        "year": 2017,
+        "rent": 1700.0,
+        "pct": 3.469263542300669
+      },
+      {
+        "year": 2018,
+        "rent": 1757.0,
+        "pct": 3.3529411764705883
+      },
+      {
+        "year": 2019,
+        "rent": 1814.0,
+        "pct": 3.2441661923733633
+      },
+      {
+        "year": 2020,
+        "rent": 1841.0,
+        "pct": 1.4884233737596473
+      },
+      {
+        "year": 2021,
+        "rent": 1929.0,
+        "pct": 4.780010863661054
+      },
+      {
+        "year": 2022,
+        "rent": 1986.0,
+        "pct": 2.9548989113530326
+      },
+      {
+        "year": 2023,
+        "rent": 2043.0,
+        "pct": 2.8700906344410875
+      },
+      {
+        "year": 2024,
+        "rent": 2100.0,
+        "pct": 2.7900146842878124
+      }
+    ]
+  },
+  "latest_rows": [
+    {
+      "year": 2024,
+      "borough": "Manhattan",
+      "median_rent": 3600.0,
+      "median_income": 115000.0,
+      "subway_access_score": 92.0,
+      "air_quality_index": 38.0
+    },
+    {
+      "year": 2024,
+      "borough": "Brooklyn",
+      "median_rent": 2800.0,
+      "median_income": 92000.0,
+      "subway_access_score": 82.0,
+      "air_quality_index": 42.0
+    },
+    {
+      "year": 2024,
+      "borough": "Queens",
+      "median_rent": 2500.0,
+      "median_income": 85000.0,
+      "subway_access_score": 78.0,
+      "air_quality_index": 40.0
+    },
+    {
+      "year": 2024,
+      "borough": "Staten Island",
+      "median_rent": 2100.0,
+      "median_income": 88000.0,
+      "subway_access_score": 50.0,
+      "air_quality_index": 44.0
+    },
+    {
+      "year": 2024,
+      "borough": "Bronx",
+      "median_rent": 1800.0,
+      "median_income": 65000.0,
+      "subway_access_score": 74.0,
+      "air_quality_index": 46.0
+    }
+  ],
   "correlations": {
-    "rent_income": 0.9352231281635079,
-    "rent_subway": 0.6525002029190465,
-    "rent_air": -0.9273772611496468
+    "rent_income": 0.9352231281635077,
+    "rent_subway": 0.6525002029190464,
+    "rent_air": -0.9273772611496475
   },
   "regression": {
     "coefficients": {
-      "intercept": -1815.496031908784,
-      "income": 0.02794857550006391,
-      "subway": 15.72823351322586,
-      "inverseAir": 11.71513542941102
+      "intercept": -1815.4960319069214,
+      "income": 0.027948575500065687,
+      "subway": 15.728233513227678,
+      "inverseAir": 11.71513542937464
+    },
+    "stderr": {
+      "intercept": 178.68503938020112,
+      "income": 0.0007733759702269232,
+      "subway": 0.5950691154587562,
+      "inverseAir": 4.401852989658708
+    },
+    "tvalues": {
+      "intercept": -10.160313578597696,
+      "income": 36.13840690171049,
+      "subway": 26.430935675601855,
+      "inverseAir": 2.6614099691418724
+    },
+    "pvalues": {
+      "intercept": 0.0,
+      "income": 0.0,
+      "subway": 0.0,
+      "inverseAir": 0.007781414761635741
+    },
+    "confidence_intervals": {
+      "intercept": {
+        "lower": -2165.7187090921157,
+        "upper": -1465.2733547217272
+      },
+      "income": {
+        "lower": 0.026432758598420918,
+        "upper": 0.029464392401710456
+      },
+      "subway": {
+        "lower": 14.561898046928516,
+        "upper": 16.89456897952684
+      },
+      "inverseAir": {
+        "lower": 3.087503569643573,
+        "upper": 20.34276728910571
+      }
     },
     "r2": 0.9975499723963837,
-    "residualStd": 32.28447776296353
+    "adj_r2": 0.9971999684530098,
+    "residualStd": 32.28447776296354,
+    "nobs": 25,
+    "vif": {
+      "income": 3.4859803043077275,
+      "subway": 1.6405572891007445,
+      "inverseAir": 4.511955063192785
+    },
+    "breusch_pagan": {
+      "lm_stat": 5.810251580117273,
+      "lm_pvalue": 0.054741904181040926,
+      "f_stat": 2.1194525415810253,
+      "f_pvalue": 0.04161981877214408
+    },
+    "window_years": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ]
   },
   "disparity_index": {
     "2010": {
-      "max": 2200,
-      "min": 1000,
-      "spread": 1200
+      "max": 2200.0,
+      "min": 1000.0,
+      "spread": 1200.0
     },
     "2011": {
-      "max": 2300,
-      "min": 1057,
-      "spread": 1243
+      "max": 2300.0,
+      "min": 1057.0,
+      "spread": 1243.0
     },
     "2012": {
-      "max": 2400,
-      "min": 1114,
-      "spread": 1286
+      "max": 2400.0,
+      "min": 1114.0,
+      "spread": 1286.0
     },
     "2013": {
-      "max": 2500,
-      "min": 1171,
-      "spread": 1329
+      "max": 2500.0,
+      "min": 1171.0,
+      "spread": 1329.0
     },
     "2014": {
-      "max": 2600,
-      "min": 1254,
-      "spread": 1346
+      "max": 2600.0,
+      "min": 1254.0,
+      "spread": 1346.0
     },
     "2015": {
-      "max": 2700,
-      "min": 1286,
-      "spread": 1414
+      "max": 2700.0,
+      "min": 1286.0,
+      "spread": 1414.0
     },
     "2016": {
-      "max": 2770,
-      "min": 1343,
-      "spread": 1427
+      "max": 2770.0,
+      "min": 1343.0,
+      "spread": 1427.0
     },
     "2017": {
-      "max": 2900,
-      "min": 1400,
-      "spread": 1500
+      "max": 2900.0,
+      "min": 1400.0,
+      "spread": 1500.0
     },
     "2018": {
-      "max": 3000,
-      "min": 1457,
-      "spread": 1543
+      "max": 3000.0,
+      "min": 1457.0,
+      "spread": 1543.0
     },
     "2019": {
-      "max": 3100,
-      "min": 1514,
-      "spread": 1586
+      "max": 3100.0,
+      "min": 1514.0,
+      "spread": 1586.0
     },
     "2020": {
-      "max": 3120,
-      "min": 1531,
-      "spread": 1589
+      "max": 3120.0,
+      "min": 1531.0,
+      "spread": 1589.0
     },
     "2021": {
-      "max": 3280,
-      "min": 1629,
-      "spread": 1651
+      "max": 3280.0,
+      "min": 1629.0,
+      "spread": 1651.0
     },
     "2022": {
-      "max": 3400,
-      "min": 1686,
-      "spread": 1714
+      "max": 3400.0,
+      "min": 1686.0,
+      "spread": 1714.0
     },
     "2023": {
-      "max": 3500,
-      "min": 1743,
-      "spread": 1757
+      "max": 3500.0,
+      "min": 1743.0,
+      "spread": 1757.0
     },
     "2024": {
-      "max": 3600,
-      "min": 1800,
-      "spread": 1800
+      "max": 3600.0,
+      "min": 1800.0,
+      "spread": 1800.0
     }
   },
   "headlines": [
@@ -148,8 +675,8 @@
       "title": "Manhattan remains the price ceiling",
       "body": "In 2024, Manhattan posts a median asking rent of $3,600, $1,800 above the city-floor borough.",
       "evidence": [
-        3600,
-        1800
+        3600.0,
+        1800.0
       ],
       "caveats": "Borough medians mask neighborhood heterogeneity and unit size mix."
     },
@@ -158,15 +685,15 @@
       "body": "Across 75 borough-year observations, rent moves with household income (r = 0.94), while regression weights point to subway as the dominant driver in recent years (\u03b2 \u2248 15.7282).",
       "evidence": [
         {
-          "rent_income": 0.9352231281635079,
-          "rent_subway": 0.6525002029190465,
-          "rent_air": -0.9273772611496468
+          "rent_income": 0.9352231281635077,
+          "rent_subway": 0.6525002029190464,
+          "rent_air": -0.9273772611496475
         },
         {
-          "intercept": -1815.496031908784,
-          "income": 0.02794857550006391,
-          "subway": 15.72823351322586,
-          "inverseAir": 11.71513542941102
+          "intercept": -1815.4960319069214,
+          "income": 0.027948575500065687,
+          "subway": 15.728233513227678,
+          "inverseAir": 11.71513542937464
         }
       ],
       "caveats": "Regression is observational; omitted variables (building quality, policy shocks) remain."

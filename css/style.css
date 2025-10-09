@@ -393,6 +393,22 @@ button:focus-visible {
   font-size: 0.95rem;
 }
 
+.chart-footnote {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+
+.appendix-link {
+  color: var(--accent, #38bdf8);
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+}
+
+.appendix-link:focus,
+.appendix-link:hover {
+  text-decoration: underline;
+}
+
 .caption-label {
   text-transform: uppercase;
   font-size: 0.7rem;

@@ -213,17 +213,26 @@
  │   └─ animations.css (entrance effects)
  ├─ js/
  │   ├─ main.js (bootstrap, orchestration)
- │   ├─ dataLoader.js (CSV + JSON fetch)
+ │   ├─ dataLoader.js (CSV + JSON + payload hydrate)
  │   ├─ analysis.js (aggregations, correlations, OLS)
  │   ├─ charts.js (Chart.js + custom heatmap)
  │   ├─ filters.js (UI state)
  │   ├─ narrative.js (auto-generated copy)
  │   ├─ scrolly.js (intersection observers)
  │   └─ theme.js (dark/light persistence)
- └─ data/
+ ├─ tools/
+ │   ├─ derive.py (JSON + appendix writer)
+ │   ├─ validate.py (schema/range assertions)
+ │   └─ figures.py (diagnostic plots)
+ ├─ sql/examples.sql (DuckDB snapshots)
+ ├─ data/
      ├─ nyc_median_rent.csv
      ├─ nyc_borough_meta.json
-     └─ derived_summary.json (template, downloadable)</code></pre>
+     ├─ derived_summary.json (pipeline output)
+     └─ viz_payload.json (chart payload for static site)
+ └─ appendix/
+     ├─ ols_report.md
+     └─ figures/*.png</code></pre>
           </div>
           <div class="key-takeaway" role="note">Key takeaway: Modular architecture keeps loading lightweight and maintainable while mirroring the production service split.</div>
         </section>
