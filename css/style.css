@@ -73,6 +73,31 @@ footer {
   color: rgba(226, 232, 240, 0.9);
 }
 
+.elevator-pitch {
+  margin: 0;
+  padding: 1rem clamp(1.5rem, 6vw, 6rem);
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-align: center;
+}
+
+.tagline {
+  max-width: 48ch;
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  color: rgba(226, 232, 240, 0.8);
+}
+
+[data-theme="light"] .elevator-pitch {
+  background: rgba(14, 165, 233, 0.18);
+  color: var(--accent-strong);
+}
+
+[data-theme="light"] .tagline {
+  color: rgba(15, 23, 42, 0.72);
+}
+
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -223,6 +248,79 @@ footer {
 .hud span {
   font-size: 0.9rem;
   color: var(--fg-muted);
+}
+
+.tech-bubble {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.8));
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 30px rgba(14, 165, 233, 0.15);
+}
+
+.tech-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-top: 1.5rem;
+}
+
+.tech-card {
+  background: var(--bg-secondary);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  transition: transform 0.25s ease, border 0.25s ease;
+}
+
+.tech-card:hover,
+.tech-card:focus-within {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+}
+
+.key-takeaway {
+  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.9rem;
+  background: rgba(99, 102, 241, 0.1);
+  border-left: 4px solid var(--accent-strong);
+  font-weight: 500;
+  color: rgba(226, 232, 240, 0.9);
+  animation: fade-in 0.6s ease;
+}
+
+[data-theme="light"] .key-takeaway {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--fg);
+}
+
+.derived-insights {
+  margin: clamp(2rem, 4vw, 4rem) clamp(1.5rem, 6vw, 6rem);
+  padding: clamp(1.5rem, 3vw, 3rem);
+  border-radius: 1.25rem;
+  background: linear-gradient(120deg, rgba(99, 102, 241, 0.16), rgba(14, 165, 233, 0.12));
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.derived-insights h2,
+.derived-insights h3 {
+  margin-bottom: 0;
+}
+
+.derived-insights p {
+  margin: 0;
+  padding: 0 0 0.5rem 0;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+}
+
+.derived-insights .text-slate-400 {
+  padding-bottom: 1.5rem;
+}
+
+[data-theme="light"] .derived-insights {
+  background: linear-gradient(120deg, rgba(14, 165, 233, 0.12), rgba(99, 102, 241, 0.16));
 }
 
 .filters {

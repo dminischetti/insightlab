@@ -85,11 +85,55 @@ export const embeddedBoroughMeta = {
 };
 
 export const embeddedSummary = {
-  "generated_at": null,
-  "latest_year": null,
-  "rent_growth": {},
-  "correlations": {},
-  "regression": {},
-  "disparity_index": {},
-  "headlines": []
+  "generated_at": "2025-01-08T00:00:00Z",
+  "latest_year": 2024,
+  "rent_growth": {
+    "Bronx": { "startYear": 2010, "endYear": 2024, "startValue": 1000, "endValue": 1800, "absolute": 800, "pct": 80 },
+    "Brooklyn": { "startYear": 2010, "endYear": 2024, "startValue": 1500, "endValue": 2800, "absolute": 1300, "pct": 86.7 },
+    "Manhattan": { "startYear": 2010, "endYear": 2024, "startValue": 2200, "endValue": 3600, "absolute": 1400, "pct": 63.6 },
+    "Queens": { "startYear": 2010, "endYear": 2024, "startValue": 1400, "endValue": 2500, "absolute": 1100, "pct": 78.6 },
+    "Staten Island": { "startYear": 2010, "endYear": 2024, "startValue": 1300, "endValue": 2100, "absolute": 800, "pct": 61.5 }
+  },
+  "correlations": {
+    "rent_income": 0.94,
+    "rent_subway": 0.65,
+    "rent_air": -0.93
+  },
+  "regression": {
+    "coefficients": {
+      "intercept": -1815.5,
+      "income": 0.028,
+      "subway": 15.73,
+      "inverseAir": 11.72
+    },
+    "r2": 0.998,
+    "residualStd": 32.3
+  },
+  "disparity_index": {
+    "2020": { "max": 3100, "min": 1486, "spread": 1614 },
+    "2021": { "max": 3200, "min": 1600, "spread": 1600 },
+    "2022": { "max": 3400, "min": 1686, "spread": 1714 },
+    "2023": { "max": 3500, "min": 1743, "spread": 1757 },
+    "2024": { "max": 3600, "min": 1800, "spread": 1800 }
+  },
+  "headlines": [
+    {
+      "title": "Brooklyn leads rent acceleration",
+      "body": "Brooklyn rents climbed 86.7% from 2010 to 2024, marking the fastest borough-scale gain.",
+      "evidence": ["86.7"],
+      "caveats": "Growth is percentage-based; absolute rents remain below Manhattan levels."
+    },
+    {
+      "title": "Manhattan remains the price ceiling",
+      "body": "In 2024, Manhattan posts a median asking rent of $3,600, $1,800 above the city-floor borough.",
+      "evidence": [3600, 1800],
+      "caveats": "Borough medians mask neighborhood heterogeneity and unit size mix."
+    },
+    {
+      "title": "Income alignment is strongest",
+      "body": "Across borough-year observations, rent moves with household income (r = 0.94), while regression weights point to income as the dominant driver in recent years (β ≈ 0.028).",
+      "evidence": [0.94, 0.028],
+      "caveats": "Regression is observational; omitted variables remain."
+    }
+  ]
 };

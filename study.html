@@ -9,14 +9,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet" />
+    <script>
+      (function () {
+        const originalWarn = console.warn;
+        console.warn = function (...args) {
+          if (args.length && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+            return;
+          }
+          originalWarn.apply(console, args);
+        };
+      })();
+    </script>
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="stylesheet" href="./css/animations.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
     <script type="module" src="./js/main.js" defer></script>
   </head>
   <body data-page="study">
+    <p class="elevator-pitch">
+      Exploring how income, transport, and environment shaped NYC’s rent dynamics — built from scratch by a data-driven backend developer.
+    </p>
     <header class="hero" style="min-height: 60vh">
       <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
         <img src="./assets/icons/theme.svg" alt="Theme" />
@@ -25,6 +38,7 @@
       <p>
         “How income, transport, and environment shape rent trends.” This case study packages fourteen years of replicated NYC housing data with correlations, regression, and narrative scaffolding to support strategy conversations.
       </p>
+      <p class="tagline">InsightLab is a full-stack, data-driven storytelling platform built to explore NYC housing over 14 years — showcasing end-to-end data engineering, statistical modeling, and interactive visualization.</p>
       <div class="hero-actions">
         <a class="btn-primary" href="./index.html">Return to the story</a>
         <a class="btn-secondary" href="#executive-summary">Jump to insights</a>
@@ -34,6 +48,7 @@
     <main class="anchor-layout">
       <nav class="anchor-nav" aria-label="Study navigation">
         <a href="#executive-summary" class="active">Executive Summary</a>
+        <a href="#tech-data">Tech &amp; Data</a>
         <a href="#methodology">Data &amp; Methodology</a>
         <a href="#results">Results</a>
         <a href="#interpretation">Interpretation</a>
@@ -54,6 +69,29 @@
             <li data-summary-item="2">Loading correlation insight…</li>
           </ul>
           <p class="text-sm text-slate-400 mt-4">Caveat: All metrics rely on replicated medians; neighborhood distributions will vary in live feeds.</p>
+          <div class="key-takeaway" role="note">Key takeaway: Rent acceleration is most intense in Brooklyn and the Bronx, reshaping affordability narratives.</div>
+        </section>
+
+        <section id="tech-data" aria-labelledby="tech-data-title" class="tech-bubble">
+          <h2 id="tech-data-title">Tech &amp; Data Stack</h2>
+          <p class="text-block">
+            Production pipelines run through PHP-based ETL services into PostgreSQL with GeoJSON overlays, while D3.js patterns inform this static visualization layer. Sources remain NYC Open Data and ACS API pull routines.
+          </p>
+          <div class="tech-grid" role="list">
+            <div class="tech-card" role="listitem">
+              <h3>Backend &amp; Storage</h3>
+              <p>Daily PHP ingestion scripts hydrate PostgreSQL schemas with rent, income, and environmental indicators.</p>
+            </div>
+            <div class="tech-card" role="listitem">
+              <h3>Spatial Context</h3>
+              <p>GeoJSON borough boundaries enable joins to AQI zones and subway catchments during the ETL phase.</p>
+            </div>
+            <div class="tech-card" role="listitem">
+              <h3>Analytical Surfacing</h3>
+              <p>D3.js and vanilla JS orchestrate interactive visuals, with Chart.js standing in for GitHub Pages compatibility.</p>
+            </div>
+          </div>
+          <div class="key-takeaway" role="note">Key takeaway: Engineering, spatial data, and storytelling converge so stakeholders see metrics and mechanism in one view.</div>
         </section>
 
         <section id="methodology" aria-labelledby="method-title">
@@ -79,6 +117,7 @@
               Borough medians smooth intra-borough diversity. Values represent a static snapshot for reproducible analysis rather than live operational feeds.
             </p>
           </div>
+          <div class="key-takeaway" role="note">Key takeaway: Replicated medians retain borough signal while acknowledging sub-market nuance and temporal lag.</div>
         </section>
 
         <section id="results" aria-labelledby="results-title">
@@ -90,22 +129,32 @@
             <h3>Median rent leaderboard</h3>
             <p data-narrative="growth" class="chart-summary"></p>
             <canvas id="chart-bar" aria-label="Median rent per borough"></canvas>
+            <div class="key-takeaway" data-takeaway="bar">Loading rent takeaway…</div>
           </div>
           <div class="chart-card">
             <h3>Longitudinal rent trends</h3>
             <p class="chart-summary">Toggle boroughs in the filter to isolate specific trajectories and recession impacts.</p>
             <canvas id="chart-line" aria-label="Rent trajectories"></canvas>
+            <div class="key-takeaway" data-takeaway="line">Loading trajectory takeaway…</div>
           </div>
           <div class="chart-card">
             <h3>Income vs rent, subway bubble</h3>
             <p data-narrative="correlation" class="chart-summary"></p>
             <canvas id="chart-scatter" aria-label="Scatter plot of rent vs income"></canvas>
+            <div class="key-takeaway" data-takeaway="scatter">Loading correlation takeaway…</div>
           </div>
           <div class="chart-card">
             <h3>Heatmap pulses</h3>
             <p data-narrative="disparity" class="chart-summary"></p>
             <canvas id="chart-heatmap" width="900" height="420" aria-label="Heatmap of rent dynamics"></canvas>
+            <div class="key-takeaway" data-takeaway="heatmap">Loading heatmap takeaway…</div>
           </div>
+          <section aria-labelledby="derived-title" class="derived-insights">
+            <h3 id="derived-title">Derived Insights</h3>
+            <p data-derived="transit">Loading transit insight…</p>
+            <p data-derived="regression">Loading regression insight…</p>
+            <p class="text-xs text-slate-400">Caveat: Model outputs reference replicated medians; localized submarkets may diverge.</p>
+          </section>
         </section>
 
         <section id="interpretation" aria-labelledby="interpret-title">
@@ -147,9 +196,10 @@
                   <td data-beta="inverseAir">Auto-filled via JS</td>
                   <td>Rent change per point improvement in air quality (100 − AQI).</td>
                 </tr>
-              </tbody>
-            </table>
+            </tbody>
+          </table>
           </div>
+          <div class="key-takeaway" role="note">Key takeaway: Regression underscores income and transit as controllable levers, while cleaner air offers emerging differentiation.</div>
         </section>
 
         <section id="appendix" aria-labelledby="appendix-title">
@@ -175,6 +225,7 @@
      ├─ nyc_borough_meta.json
      └─ derived_summary.json (template, downloadable)</code></pre>
           </div>
+          <div class="key-takeaway" role="note">Key takeaway: Modular architecture keeps loading lightweight and maintainable while mirroring the production service split.</div>
         </section>
 
         <section id="sql" aria-labelledby="sql-title">
@@ -202,6 +253,7 @@ SELECT borough, year, median_rent, median_income, subway_access_score,
 FROM nyc_median_rent
 WHERE year BETWEEN 2019 AND 2024;</code></pre>
           </div>
+          <div class="key-takeaway" role="note">Key takeaway: SQL scaffolding accelerates translation to warehouse-grade dashboards and reproducible notebooks.</div>
         </section>
 
         <section id="next" aria-labelledby="next-title">
@@ -225,12 +277,15 @@ WHERE year BETWEEN 2019 AND 2024;</code></pre>
               <button data-print class="print-button">Print / Save PDF</button>
             </div>
           </div>
+          <div class="key-takeaway" role="note">Key takeaway: Next steps widen the scope to granular listings, ridership elasticity, and rent-burden diagnostics.</div>
         </section>
       </div>
     </main>
 
     <footer>
-      <p>Built for GitHub Pages. Replace ./data/nyc_median_rent.csv with fresh exports to refresh all visuals.</p>
+      <p>Crafted by Jordan Chen — <a href="https://github.com/jordanchen" target="_blank" rel="noopener">GitHub</a> · <a href="https://www.linkedin.com/in/jordanchenanalytics/" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>InsightLab is a full-stack, data-driven storytelling platform built to explore NYC housing over 14 years — showcasing end-to-end data engineering, statistical modeling, and interactive visualization.</p>
+      <p>Swap ./data/nyc_median_rent.csv with a fresh export to refresh visuals instantly; embedded fallbacks keep the experience offline-ready.</p>
     </footer>
   </body>
 </html>

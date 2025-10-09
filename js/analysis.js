@@ -64,6 +64,26 @@ export function calculateRentGrowth(records) {
   return result;
 }
 
+export function calculateMetricGrowth(records, metric) {
+  const years = uniqueYears(records);
+  const startYear = years[0];
+  const endYear = years[years.length - 1];
+  const byBorough = groupByBorough(records);
+  const result = {};
+  Object.entries(byBorough).forEach(([borough, rows]) => {
+    const start = rows.find((r) => r.year === startYear);
+    const end = rows.find((r) => r.year === endYear);
+    if (!start || !end) return;
+    const startValue = start[metric];
+    const endValue = end[metric];
+    if (startValue === undefined || endValue === undefined) return;
+    const absolute = endValue - startValue;
+    const pct = startValue === 0 ? 0 : (absolute / startValue) * 100;
+    result[borough] = { startYear, endYear, startValue, endValue, absolute, pct };
+  });
+  return result;
+}
+
 export function calculateYearOverYear(records) {
   const sorted = [...records].sort((a, b) => (a.year === b.year ? a.median_rent - b.median_rent : a.year - b.year));
   const yoy = {};
@@ -254,7 +274,21 @@ function rankBoroughs(latestRows) {
 }
 
 export function summarize(records) {
+  if (!Array.isArray(records) || records.length === 0) {
+    return {
+      growth: {},
+      incomeGrowth: {},
+      yoy: {},
+      latestRows: [],
+      correlations: { rent_income: null, rent_subway: null, rent_air: null },
+      regression: null,
+      disparity: {},
+      headlines: [],
+      latestYear: null
+    };
+  }
   const growth = calculateRentGrowth(records);
+  const incomeGrowth = calculateMetricGrowth(records, 'median_income');
   const yoy = calculateYearOverYear(records);
   const latestRows = latestYearSnapshot(records);
   const correlations = {
@@ -269,6 +303,7 @@ export function summarize(records) {
 
   return {
     growth,
+    incomeGrowth,
     yoy,
     latestRows,
     correlations,
@@ -280,12 +315,23 @@ export function summarize(records) {
 }
 
 export function generateHeadlines({ growth, latestRows, correlations, regression, disparity, regWindow }) {
+  if (!latestRows?.length || !growth || !Object.keys(growth).length) return [];
+
+  const safeWindow = Array.isArray(regWindow)
+    ? regWindow.filter((row) => row && Number.isFinite(row.year))
+    : [];
+
   const strongestGrowth = Object.entries(growth)
-    .map(([borough, values]) => ({ borough, pct: values.pct }))
+    .map(([borough, values]) => ({ borough, pct: values.pct, meta: values }))
+    .filter((entry) => Number.isFinite(entry.pct))
     .sort((a, b) => b.pct - a.pct)[0];
 
-  const latestSpreadYear = Math.max(...Object.keys(disparity).map(Number));
-  const latestSpread = disparity[latestSpreadYear];
+  const topRow = latestRows.find((row) => row && Number.isFinite(row.median_rent));
+  if (!strongestGrowth || !topRow) return [];
+
+  const spreadYears = disparity ? Object.keys(disparity) : [];
+  const latestSpreadYear = spreadYears.length ? Math.max(...spreadYears.map(Number)) : null;
+  const latestSpread = latestSpreadYear ? disparity[latestSpreadYear] : null;
 
   const correlationEntries = [
     ['household income', correlations.rent_income],
@@ -294,26 +340,28 @@ export function generateHeadlines({ growth, latestRows, correlations, regression
   ].filter(([, value]) => value !== null && !Number.isNaN(value));
   const correlationHighlight = correlationEntries.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0];
 
-  const regressionDriver = regression
+  const regressionDriver = regression?.coefficients
     ? Object.entries(regression.coefficients)
         .filter(([key]) => key !== 'intercept')
         .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0]
     : null;
 
-  const latestYearValue = regWindow && regWindow.length ? Math.max(...regWindow.map((row) => row.year)) : latestRows[0].year;
-  const topVsBottom = latestRows[0].median_rent - latestSpread.min;
+  const recentYears = safeWindow.map((row) => row.year);
+  const latestYearFallback = strongestGrowth?.meta?.endYear ?? topRow.year ?? new Date().getFullYear();
+  const latestYearValue = recentYears.length ? Math.max(...recentYears) : latestYearFallback;
+  const topVsBottom = latestSpread && Number.isFinite(latestSpread.min) ? topRow.median_rent - latestSpread.min : 0;
 
   return [
     {
       title: `${strongestGrowth.borough} leads rent acceleration`,
-      body: `${strongestGrowth.borough} rents climbed ${strongestGrowth.pct.toFixed(1)}% from ${growth[strongestGrowth.borough].startYear} to ${growth[strongestGrowth.borough].endYear}, marking the fastest borough-scale gain.`,
+      body: `${strongestGrowth.borough} rents climbed ${strongestGrowth.pct.toFixed(1)}% from ${strongestGrowth.meta.startYear} to ${strongestGrowth.meta.endYear}, marking the fastest borough-scale gain.`,
       evidence: [strongestGrowth.pct.toFixed(1)],
       caveats: 'Growth is percentage-based; absolute rents remain below Manhattan levels.'
     },
     {
-      title: `${latestRows[0].borough} remains the price ceiling`,
-      body: `In ${latestYearValue}, ${latestRows[0].borough} posts a median asking rent of $${latestRows[0].median_rent.toLocaleString()}, $${topVsBottom.toLocaleString()} above the city-floor borough.`,
-      evidence: [latestRows[0].median_rent, latestSpread.spread],
+      title: `${topRow.borough} remains the price ceiling`,
+      body: `In ${latestYearValue}, ${topRow.borough} posts a median asking rent of $${topRow.median_rent.toLocaleString()}, ${latestSpread ? `$${topVsBottom.toLocaleString()} above` : 'outpacing'} the city-floor borough.`,
+      evidence: [topRow.median_rent, latestSpread?.spread ?? null],
       caveats: 'Borough medians mask neighborhood heterogeneity and unit size mix.'
     },
     {
