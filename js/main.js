@@ -29,9 +29,11 @@ const dataUrl = (file) => new URL(`../data/${file}`, import.meta.url).href;
 
 async function bootstrap() {
   initThemeToggle(document.querySelector('[data-theme-toggle]'));
+  document.body.classList.add('compact-mode');
   initQuickNav();
   initLayoutToggle();
   observeSections();
+  initBackToTop();
 
   const { records, boroughMeta, baseSummary } = await loadAllData();
   state.records = records;
@@ -187,11 +189,29 @@ function initQuickNav() {
 function initLayoutToggle() {
   const toggle = document.querySelector('[data-layout-toggle]');
   if (!toggle) return;
+  toggle.setAttribute('aria-pressed', String(document.body.classList.contains('compact-mode')));
   toggle.addEventListener('click', () => {
     const compact = document.body.classList.toggle('compact-mode');
     toggle.setAttribute('aria-pressed', String(compact));
     scheduleHeatmapResize();
   });
+}
+
+function initBackToTop() {
+  const backTop = document.getElementById('back-top');
+  if (!backTop) return;
+  const toggleVisibility = () => {
+    if (window.scrollY > 320) {
+      backTop.classList.add('is-visible');
+    } else {
+      backTop.classList.remove('is-visible');
+    }
+  };
+  window.addEventListener('scroll', toggleVisibility, { passive: true });
+  toggleVisibility();
+  backTop.addEventListener('click', () =>
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  );
 }
 
 function observeSections() {
