@@ -12,7 +12,7 @@ validate:
 
 sql:
 	mkdir -p data/duckdb_outputs
-	duckdb -c ".read sql/examples.sql"
+	python tools/run_sql.py
 
 figures:
 	$(PY) tools/figures.py
