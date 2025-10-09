@@ -14,6 +14,7 @@ import { initBarChart, initLineChart, initScatterChart, initHeatmap, refreshThem
 const state = {
   records: [],
   summary: null,
+  viz: null,
   charts: {
     bar: null,
     line: null,
@@ -31,15 +32,34 @@ async function bootstrap() {
   initDensityToggle();
   initProgressBar();
   initRevealObserver();
-  const { records } = await loadAllData();
+  const { records, summary, vizPayload } = await loadAllData();
   state.records = records;
-  state.summary = summarize(records);
+  state.viz = vizPayload;
+  // Derive a summary locally so we can merge in any precomputed fields from the
+  // pipeline while preserving the interactive fallbacks.
+  const computedSummary = summarize(records);
+  if (summary) {
+    state.summary = {
+      ...computedSummary,
+      ...summary,
+      latestRows: summary.latestRows?.length ? summary.latestRows : computedSummary.latestRows,
+      yoy: Object.keys(summary.yoy ?? {}).length ? summary.yoy : computedSummary.yoy,
+      growth: Object.keys(summary.growth ?? {}).length ? summary.growth : computedSummary.growth,
+      incomeGrowth: Object.keys(summary.incomeGrowth ?? {}).length ? summary.incomeGrowth : computedSummary.incomeGrowth,
+      disparity: Object.keys(summary.disparity ?? {}).length ? summary.disparity : computedSummary.disparity,
+      correlations: summary.correlations ?? computedSummary.correlations,
+      regression: summary.regression ?? computedSummary.regression,
+      headlines: summary.headlines?.length ? summary.headlines : computedSummary.headlines
+    };
+  } else {
+    state.summary = computedSummary;
+  }
 
   updateHero(state.summary);
   updateContext(state.summary);
-  renderCharts(records, state.summary);
-  renderCaptions(records, state.summary);
-  renderFindings(records, state.summary);
+  renderCharts(state.records, state.summary, state.viz);
+  renderCaptions(state.records, state.summary, state.viz);
+  renderFindings(state.records, state.summary);
 
   document.addEventListener('theme:change', () => refreshThemes());
 }
@@ -90,11 +110,14 @@ function initRevealObserver() {
   targets.forEach((el) => observer.observe(el));
 }
 
-function renderCharts(records, summary) {
+function renderCharts(records, summary, vizPayload) {
   const latestYear = summary.latestYear;
-  const latestRows = filterRecords(records, { year: latestYear }).sort((a, b) => b.median_rent - a.median_rent);
-  const boroughs = uniqueBoroughs(records);
-  const years = uniqueYears(records);
+  const latestRows = (summary.latestRows && summary.latestRows.length
+    ? summary.latestRows
+    : filterRecords(records, { year: latestYear }).sort((a, b) => b.median_rent - a.median_rent))
+    .map((row, index) => ({ ...row, rank: index + 1 }));
+  const boroughs = vizPayload?.boroughs ?? uniqueBoroughs(records);
+  const years = vizPayload?.years ?? uniqueYears(records);
   const barCanvas = document.getElementById('chart-bar');
   const lineCanvas = document.getElementById('chart-line');
   const scatterCanvas = document.getElementById('chart-scatter');
@@ -104,7 +127,7 @@ function renderCharts(records, summary) {
   if (lineCanvas) state.charts.line = initLineChart(lineCanvas, records, years, boroughs);
   if (scatterCanvas) state.charts.scatter = initScatterChart(scatterCanvas, compileScatter(records, boroughs));
   if (heatmapCanvas) {
-    const dataset = prepareHeatmapDataset(heatmapData(records, 'rent_growth', summary.yoy));
+    const dataset = vizPayload?.heatmap ?? prepareHeatmapDataset(heatmapData(records, 'rent_growth', summary.yoy));
     state.charts.heatmap = initHeatmap(heatmapCanvas, dataset);
   }
 }
@@ -146,7 +169,7 @@ function updateContext(summary) {
   }
 }
 
-function renderCaptions(records, summary) {
+function renderCaptions(records, summary, vizPayload) {
   const latestRows = summary.latestRows ?? [];
   if (latestRows.length) {
     const top = latestRows[0];
@@ -188,7 +211,7 @@ function renderCaptions(records, summary) {
     );
   }
 
-  const yoyMatrix = prepareHeatmapDataset(heatmapData(records, 'rent_growth', summary.yoy));
+  const yoyMatrix = vizPayload?.heatmap ?? prepareHeatmapDataset(heatmapData(records, 'rent_growth', summary.yoy));
   const pctValues = yoyMatrix.matrix.flat().filter((value) => Number.isFinite(value));
   if (pctValues.length) {
     const maxYoY = Math.max(...pctValues);
