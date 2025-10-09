@@ -1,411 +1,871 @@
-import { initThemeToggle } from './theme.js';
-import { loadAllData } from './dataLoader.js';
-import {
-  summarize,
-  uniqueYears,
-  uniqueBoroughs,
-  filterRecords,
-  compileScatter,
-  heatmapData,
-  calculateMetricGrowth
-} from './analysis.js';
-import { initBarChart, initLineMultiples, initScatterChart, updateScatterChart, initHeatmap, refreshThemes } from './charts.js';
+// main.js - Production-ready JavaScript that uses YOUR actual data
 
-const state = {
-  records: [],
+// =============================================================================
+// CONSTANTS & STATE
+// =============================================================================
+
+const STATE = {
+  theme: localStorage.getItem('theme') || 'dark',
+  density: localStorage.getItem('density') || 'compact',
+  chartInstances: new Map(),
+  data: null,
   summary: null,
-  viz: null,
-  charts: {
-    bar: null,
-    multiples: [],
-    scatter: null,
-    heatmap: null
-  },
-  scatterRanges: null
+  counterObserver: null,
 };
 
-const counterOptions = { duration: 1600 };
+// =============================================================================
+// DATA LOADING
+// =============================================================================
 
-window.addEventListener('DOMContentLoaded', bootstrap);
+const loadData = async () => {
+  try {
+    const [vizResponse, summaryResponse] = await Promise.all([
+      fetch('./data/viz_payload.json').catch(() => null),
+      fetch('./data/derived_summary.json').catch(() => null),
+    ]);
 
-async function bootstrap() {
-  initThemeToggle(document.querySelector('[data-theme-toggle]'));
-  initDensityToggle();
-  initProgressBar();
-  initRevealObserver();
-  const { records, summary, vizPayload } = await loadAllData();
-  state.records = records;
-  state.viz = vizPayload;
-  // Derive a summary locally so we can merge in any precomputed fields from the
-  // pipeline while preserving the interactive fallbacks.
-  const computedSummary = summarize(records);
-  if (summary) {
-    state.summary = {
-      ...computedSummary,
-      ...summary,
-      latestRows: summary.latestRows?.length ? summary.latestRows : computedSummary.latestRows,
-      yoy: Object.keys(summary.yoy ?? {}).length ? summary.yoy : computedSummary.yoy,
-      growth: Object.keys(summary.growth ?? {}).length ? summary.growth : computedSummary.growth,
-      incomeGrowth: Object.keys(summary.incomeGrowth ?? {}).length ? summary.incomeGrowth : computedSummary.incomeGrowth,
-      disparity: Object.keys(summary.disparity ?? {}).length ? summary.disparity : computedSummary.disparity,
-      correlations: summary.correlations ?? computedSummary.correlations,
-      regression: summary.regression ?? computedSummary.regression,
-      headlines: summary.headlines?.length ? summary.headlines : computedSummary.headlines
-    };
-  } else {
-    state.summary = computedSummary;
-  }
+    const vizPayload = vizResponse?.ok ? await vizResponse.json() : null;
+    const summary = summaryResponse?.ok ? await summaryResponse.json() : null;
 
-  updateHero(state.summary);
-  updateContext(state.summary);
-  updateKpis(state.records, state.summary);
-  renderCharts(state.records, state.summary, state.viz);
-  renderCaptions(state.records, state.summary, state.viz);
-  renderFindings(state.records, state.summary);
+    if (!vizPayload) {
+      console.warn('Visualization payload is missing; charts will remain placeholders.');
+      return null;
+    }
 
-  document.addEventListener('theme:change', () => refreshThemes());
-}
+    const boroughs = vizPayload.boroughs ?? [];
+    const years = vizPayload.years ?? [];
 
-function initDensityToggle() {
-  const toggle = document.querySelector('[data-density-toggle]');
-  if (!toggle) return;
-  const updateLabel = () => {
-    const compact = document.body.classList.contains('compact-mode');
-    toggle.textContent = compact ? 'Compact spacing' : 'Expanded spacing';
-    toggle.setAttribute('aria-pressed', String(compact));
-  };
-  updateLabel();
-  toggle.addEventListener('click', () => {
-    document.body.classList.toggle('compact-mode');
-    updateLabel();
-  });
-}
-
-function initProgressBar() {
-  const bar = document.getElementById('progress-bar');
-  if (!bar) return;
-  const update = () => {
-    const scrollTop = window.scrollY;
-    const docHeight = document.body.scrollHeight - window.innerHeight;
-    const ratio = docHeight > 0 ? scrollTop / docHeight : 0;
-    bar.style.width = `${Math.max(0, Math.min(100, ratio * 100))}%`;
-  };
-  window.addEventListener('scroll', update, { passive: true });
-  window.addEventListener('resize', update);
-  update();
-}
-
-function initRevealObserver() {
-  const targets = document.querySelectorAll('[data-animate], .chart-frame');
-  if (!targets.length) return;
-  const observer = new IntersectionObserver(
-    (entries, obs) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          obs.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.15 }
-  );
-  targets.forEach((el) => observer.observe(el));
-}
-
-function renderCharts(records, summary, vizPayload) {
-  const latestYear = summary.latestYear;
-  const latestRows = (summary.latestRows && summary.latestRows.length
-    ? summary.latestRows
-    : filterRecords(records, { year: latestYear }).sort((a, b) => b.median_rent - a.median_rent))
-    .map((row, index) => ({ ...row, rank: index + 1 }));
-  const boroughs = vizPayload?.boroughs ?? uniqueBoroughs(records);
-  const years = vizPayload?.years ?? uniqueYears(records);
-  const barCanvas = document.getElementById('chart-bar');
-  const multiplesContainer = document.querySelector('[data-chart-multiples]');
-  const scatterCanvas = document.getElementById('chart-scatter');
-  const heatmapCanvas = document.getElementById('chart-heatmap');
-
-  if (barCanvas) state.charts.bar = initBarChart(barCanvas, latestRows, latestYear);
-  if (multiplesContainer) state.charts.multiples = initLineMultiples(multiplesContainer, records, years, boroughs);
-  if (scatterCanvas) initScatterWithTabs(scatterCanvas, records, boroughs, years);
-  if (heatmapCanvas) {
-    const dataset = vizPayload?.heatmap ?? prepareHeatmapDataset(heatmapData(records, 'rent_growth', summary.yoy));
-    state.charts.heatmap = initHeatmap(heatmapCanvas, dataset);
-  }
-}
-
-function initScatterWithTabs(canvas, records, boroughs, years) {
-  const points = compileScatter(records, boroughs);
-  const startYear = Math.min(...years);
-  const splitYear = 2016;
-  const endYear = Math.max(...years);
-  const ranges = {
-    '2010-2016': { min: startYear, max: Math.min(splitYear, endYear) },
-    '2017-2024': { min: Math.min(splitYear + 1, endYear), max: endYear }
-  };
-  state.scatterRanges = ranges;
-  const defaultKey = Object.keys(ranges)[0];
-  const initialPoints = filterScatter(points, ranges[defaultKey]);
-  state.charts.scatter = initScatterChart(canvas, initialPoints);
-
-  const tabs = document.querySelectorAll('[data-period-tab]');
-  tabs.forEach((tab, index) => {
-    if (!tab.dataset.periodTab) return;
-    tab.setAttribute('tabindex', index === 0 ? '0' : '-1');
-    tab.addEventListener('click', () => {
-      const key = tab.dataset.periodTab;
-      if (!key || !ranges[key]) return;
-      tabs.forEach((other) => {
-        const isActive = other === tab;
-        other.classList.toggle('is-active', isActive);
-        other.setAttribute('aria-selected', String(isActive));
-        other.setAttribute('tabindex', isActive ? '0' : '-1');
-      });
-      const filtered = filterScatter(points, ranges[key]);
-      updateScatterChart(state.charts.scatter, filtered);
+    const rentSeries = {};
+    boroughs.forEach((borough) => {
+      const rents = vizPayload.series?.[borough]?.median_rent ?? [];
+      rentSeries[borough] = rents;
     });
-  });
-}
 
-function filterScatter(points, range) {
-  if (!range) return points;
-  if (range.max < range.min) return points;
-  return points.filter((point) => point.year >= range.min && point.year <= range.max);
-}
+    const rentData = {
+      labels: boroughs,
+      values: boroughs.map((borough) => {
+        if (summary?.rent_growth?.[borough]?.endValue) {
+          return summary.rent_growth[borough].endValue;
+        }
+        const rents = rentSeries[borough];
+        return rents?.length ? rents[rents.length - 1] : 0;
+      }),
+      years,
+      boroughs,
+      series: rentSeries,
+    };
 
+    const scatterPoints = vizPayload.scatter ?? [];
+    const scatterData = {
+      '2010-2016': [],
+      '2017-2024': [],
+    };
 
-function updateHero(summary) {
-  const disparityEntries = Object.entries(summary.disparity ?? {});
-  if (!disparityEntries.length) return;
-  const earliestYear = Math.min(...disparityEntries.map(([year]) => Number(year)));
-  const latestYear = summary.latestYear;
-  const earliestSpread = summary.disparity[earliestYear]?.spread ?? 0;
-  const latestSpread = summary.disparity[latestYear]?.spread ?? 0;
-  const delta = latestSpread - earliestSpread;
+    scatterPoints.forEach((point) => {
+      if (!point || typeof point.year !== 'number') return;
+      const enriched = {
+        x: Number(point.x ?? 0),
+        y: Number(point.y ?? 0),
+        r: Number(point.r ?? 0),
+        label: `${point.borough ?? 'Unknown'} ${point.year}`,
+        borough: point.borough,
+        year: point.year,
+      };
+      if (point.year <= 2016) {
+        scatterData['2010-2016'].push(enriched);
+      } else {
+        scatterData['2017-2024'].push(enriched);
+      }
+    });
 
-  const metricNode = document.querySelector('[data-counter-value]');
-  const abstractNode = document.querySelector('[data-abstract-spread]');
-  if (abstractNode) {
-    abstractNode.textContent = `${formatCurrency(delta)} wider`;
+    const heatmapSource = vizPayload.heatmap ?? {};
+    const heatmapData = {
+      years: heatmapSource.years ?? years,
+      boroughs: heatmapSource.boroughs ?? boroughs,
+      values: (heatmapSource.matrix ?? []).map((row = []) =>
+        row.map((value) => (typeof value === 'number' ? value : 0))
+      ),
+    };
+
+    STATE.data = { rentData, scatterData, heatmapData };
+    STATE.summary = summary;
+
+    return STATE.data;
+  } catch (error) {
+    console.warn('Could not load data files, charts will wait for data:', error);
+    return null;
   }
-  if (metricNode) {
-    animateCounter(metricNode, delta, counterOptions, { prefix: '+$' });
-    metricNode.dataset.value = delta;
-    metricNode.setAttribute('aria-live', 'polite');
-  }
-}
+};
 
-function updateContext(summary) {
-  const latestYear = summary.latestYear;
-  const latestRows = summary.latestRows ?? [];
-  if (!latestRows.length) return;
-  const averageRent = latestRows.reduce((sum, row) => sum + row.median_rent, 0) / latestRows.length;
-  const averageIncome = latestRows.reduce((sum, row) => sum + row.median_income, 0) / latestRows.length;
-  const statNode = document.querySelector('[data-context-stat]');
-  if (statNode) {
-    statNode.textContent = `In ${latestYear}, the typical borough renter faced a $${Math.round(
-      averageRent
-    ).toLocaleString()} median asking rent while household income averaged $${Math.round(averageIncome)
-      .toLocaleString()} — a gap that kept pressure on affordability.`;
-  }
-}
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
 
-function renderCaptions(records, summary, vizPayload) {
-  const latestRows = summary.latestRows ?? [];
-  if (latestRows.length) {
-    const top = latestRows[0];
-    const bottom = latestRows[latestRows.length - 1];
-    const spread = top.median_rent - bottom.median_rent;
-    setText(
-      '[data-takeaway="rent-latest"]',
-      `Takeaway: ${top.borough} tops ${summary.latestYear} at ${formatCurrency(top.median_rent)}, while ${bottom.borough} remains lowest, leaving a ${spread.toLocaleString('en-US', { maximumFractionDigits: 0 })} dollar gap. · Source: NYC Open Data. · Period: ${summary.latestYear}.`
-    );
-  }
-
-  const growth = summary.growth ?? {};
-  const growthValues = Object.values(growth).filter(Boolean);
-  if (growthValues.length) {
-    const minGrowth = Math.min(...growthValues.map((g) => g.pct));
-    const maxGrowth = Math.max(...growthValues.map((g) => g.pct));
-    const topBorough = Object.keys(growth).reduce((best, borough) => {
-      if (!best) return borough;
-      return (growth[borough]?.pct ?? 0) > (growth[best]?.pct ?? 0) ? borough : best;
-    }, null);
-    setText(
-      '[data-takeaway="rent-trajectories"]',
-      `Takeaway: Borough rents climbed between ${minGrowth.toFixed(1)}% and ${maxGrowth.toFixed(1)}%, with ${(topBorough ?? 'Brooklyn')} bending upward fastest after 2012. · Source: NYC Open Data. · Period: 2010–2024.`
-    );
-  }
-
-  const incomeCorrelation = summary.correlations?.rent_income;
-  const transitCorrelation = summary.correlations?.rent_subway;
-  if (Number.isFinite(incomeCorrelation) && Number.isFinite(transitCorrelation)) {
-    setText(
-      '[data-takeaway="rent-transit"]',
-      `Takeaway: Rent tracks income (r = ${incomeCorrelation.toFixed(2)}) yet high-transit borough-years sit above the trend, tightening budgets. · Source: ACS + MTA + NYC Open Data. · Period: 2010–2024.`
-    );
-  }
-
-  const yoyMatrix = vizPayload?.heatmap ?? prepareHeatmapDataset(heatmapData(records, 'rent_growth', summary.yoy));
-  const pctValues = yoyMatrix.matrix.flat().filter((value) => Number.isFinite(value));
-  if (pctValues.length) {
-    const maxYoY = Math.max(...pctValues);
-    setText(
-      '[data-takeaway="rent-heatmap"]',
-      `Takeaway: Year-over-year rent change peaked near ${maxYoY.toFixed(1)}%, with matching surges around 2013 and 2021. · Source: NYC Open Data. · Period: 2011–2024.`
-    );
-  }
-}
-
-function updateKpis(records, summary) {
-  const years = uniqueYears(records);
-  if (!years.length) return;
-  const startYear = years[0];
-  const endYear = years[years.length - 1];
-  const startRows = filterRecords(records, { year: startYear });
-  const endRows = filterRecords(records, { year: endYear });
-  if (startRows.length && endRows.length) {
-    const startAverage = average(startRows.map((row) => row.median_rent));
-    const endAverage = average(endRows.map((row) => row.median_rent));
-    const rentDelta = endAverage - startAverage;
-    const rentPrefix = rentDelta >= 0 ? '+' : '−';
-    setText('[data-kpi="rent-delta"]', `${rentPrefix}${formatCurrency(Math.abs(rentDelta))}`);
-  }
-
-  const wageStartYear = Math.max(2015, startYear);
-  const startIncomeRows = filterRecords(records, { year: wageStartYear });
-  const endIncomeRows = filterRecords(records, { year: endYear });
-  if (startIncomeRows.length && endIncomeRows.length) {
-    const startGap = average(startIncomeRows.map((row) => row.median_income / 12 - row.median_rent));
-    const endGap = average(endIncomeRows.map((row) => row.median_income / 12 - row.median_rent));
-    const gapDelta = endGap - startGap;
-    const gapPrefix = gapDelta >= 0 ? '+' : '−';
-    setText('[data-kpi="wage-gap"]', `${gapPrefix}${formatCurrency(Math.abs(gapDelta))}`);
-  }
-}
-
-function average(values) {
-  if (!values.length) return 0;
-  const total = values.reduce((sum, value) => sum + Number(value || 0), 0);
-  return total / values.length;
-}
-
-function renderFindings(records, summary) {
-  const list = document.querySelector('[data-findings-list]');
-  if (!list) return;
-  list.innerHTML = '';
-
-  const growth = summary.growth ?? {};
-  const incomeGrowth = calculateMetricGrowth(records, 'median_income');
-  const rentGrowthRange = rangeFromGrowth(growth);
-  const incomeGrowthRange = rangeFromGrowth(incomeGrowth);
-  const rentOutpaced = countRentOutpacesIncome(records, 2016, summary.latestYear);
-  const transitR = summary.correlations?.rent_subway ?? null;
-  const spreadDelta = computeSpreadDelta(summary.disparity ?? {});
-  const regressionR2 = summary.regression?.r2 ?? null;
-
-  const bullets = [
-    `Median borough rent rose ${rentGrowthRange} since 2010, compared with income gains of ${incomeGrowthRange}.`,
-    `Rent growth outpaced income growth in ${rentOutpaced} of 5 boroughs after 2016, reinforcing sustained affordability pressure.`,
-    Number.isFinite(transitR)
-      ? `Transit proximity explains roughly ${(transitR ** 2 * 100).toFixed(0)}% of rent variance (r ≈ ${transitR.toFixed(2)}).`
-      : null,
-    spreadDelta
-      ? `The Manhattan–Bronx rent spread widened by ${formatCurrency(spreadDelta.delta)} since 2010, reaching ${formatCurrency(
-          spreadDelta.latest
-        )} in ${spreadDelta.year}.`
-      : null,
-    Number.isFinite(regressionR2)
-      ? `A three-factor OLS (income + transit + air quality) on 2020–2024 produces R² ≈ ${regressionR2.toFixed(
-          3
-        )}, indicating little unexplained variance.`
-      : null
-  ].filter(Boolean);
-
-  bullets.forEach((text) => {
-    const item = document.createElement('li');
-    item.textContent = text;
-    list.appendChild(item);
-  });
-}
-
-function animateCounter(node, value, { duration } = { duration: 1200 }, { prefix = '', suffix = '' } = {}) {
-  const start = performance.now();
-  const startValue = 0;
-  const target = Number(value) || 0;
-  const step = (now) => {
-    const progress = Math.min(1, (now - start) / duration);
-    const eased = easeOutQuart(progress);
-    const current = Math.round(startValue + (target - startValue) * eased);
-    node.textContent = `${prefix}${current.toLocaleString()}${suffix}`;
-    if (progress < 1) requestAnimationFrame(step);
+const debounce = (func, wait) => {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
   };
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    node.textContent = `${prefix}${Math.round(target).toLocaleString()}${suffix}`;
+};
+
+const animateCounter = (element, target, duration = 2000) => {
+  const start = 0;
+  const increment = target / (duration / 16 || 1);
+  let current = start;
+
+  const timer = setInterval(() => {
+    current += increment;
+    if ((increment >= 0 && current >= target) || (increment < 0 && current <= target)) {
+      current = target;
+      clearInterval(timer);
+    }
+    element.textContent = `+$${Math.round(current).toLocaleString()}`;
+    element.dataset.counterAnimated = 'true';
+  }, 16);
+};
+
+const getChartColors = (theme) => {
+  const isDark = theme === 'dark';
+  return {
+    primary: isDark ? 'oklch(78% 0.15 195)' : 'oklch(62% 0.18 195)',
+    secondary: isDark ? 'oklch(62% 0.22 270)' : 'oklch(55% 0.24 270)',
+    text: isDark ? 'oklch(93% 0.01 250)' : 'oklch(20% 0.02 250)',
+    textMuted: isDark ? 'oklch(68% 0.02 250)' : 'oklch(48% 0.02 250)',
+    grid: isDark ? 'oklch(35% 0.02 250 / 0.2)' : 'oklch(85% 0.01 250 / 0.5)',
+    background: isDark ? 'oklch(18% 0.02 250)' : 'oklch(98% 0.005 250)',
+    boroughColors: [
+      'oklch(78% 0.15 195)',
+      'oklch(62% 0.22 270)',
+      'oklch(75% 0.18 150)',
+      'oklch(70% 0.20 60)',
+      'oklch(65% 0.18 330)',
+    ],
+  };
+};
+
+const formatCurrency = (value) => {
+  if (typeof value !== 'number' || Number.isNaN(value)) return '—';
+  const sign = value >= 0 ? '+' : '-';
+  return `${sign}$${Math.abs(Math.round(value)).toLocaleString()}`;
+};
+
+const formatDifference = (value, suffix = '') => {
+  if (typeof value !== 'number' || Number.isNaN(value)) return '—';
+  const sign = value >= 0 ? '+' : '';
+  return `${sign}${value.toFixed(1)}${suffix}`;
+};
+
+// =============================================================================
+// THEME & DENSITY MANAGEMENT
+// =============================================================================
+
+const initTheme = () => {
+  const toggle = document.querySelector('[data-theme-toggle]');
+  const html = document.documentElement;
+
+  const applyTheme = (theme) => {
+    html.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    STATE.theme = theme;
+
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      metaTheme.content = theme === 'dark' ? '#0b1221' : '#f5f7fb';
+    }
+
+    refreshAllCharts();
+  };
+
+  toggle?.addEventListener('click', () => {
+    const newTheme = STATE.theme === 'dark' ? 'light' : 'dark';
+    applyTheme(newTheme);
+  });
+
+  applyTheme(STATE.theme);
+};
+
+const initDensity = () => {
+  const toggle = document.querySelector('[data-density-toggle]');
+  const body = document.body;
+
+  const applyDensity = (density) => {
+    body.classList.toggle('compact-mode', density === 'compact');
+    toggle?.setAttribute('aria-pressed', density === 'compact');
+    const label = toggle?.querySelector('.density-label');
+    if (label) {
+      label.textContent = density === 'compact' ? 'Compact' : 'Comfortable';
+    }
+    localStorage.setItem('density', density);
+    STATE.density = density;
+  };
+
+  toggle?.addEventListener('click', () => {
+    const newDensity = STATE.density === 'compact' ? 'comfortable' : 'compact';
+    applyDensity(newDensity);
+  });
+
+  applyDensity(STATE.density);
+};
+
+// =============================================================================
+// SCROLL PROGRESS & ANIMATIONS
+// =============================================================================
+
+const initScrollProgress = () => {
+  const progressBar = document.getElementById('progress-bar');
+  if (!progressBar) return;
+
+  const updateProgress = () => {
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrolled = window.scrollY;
+    const progress = scrollHeight > 0 ? (scrolled / scrollHeight) * 100 : 0;
+    progressBar.style.width = `${Math.max(0, Math.min(100, progress))}%`;
+  };
+
+  window.addEventListener('scroll', debounce(updateProgress, 10), { passive: true });
+  updateProgress();
+};
+
+const initScrollAnimations = () => {
+  const elements = document.querySelectorAll('[data-animate]');
+  if (!elements.length) return;
+
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px 0px -10% 0px',
+    threshold: 0.1,
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  elements.forEach((el) => observer.observe(el));
+};
+
+// =============================================================================
+// CHART INITIALIZATION - USES YOUR DATA
+// =============================================================================
+
+const createBarChart = (data) => {
+  const canvas = document.getElementById('chart-bar');
+  if (!canvas) return;
+
+  if (!data) {
+    console.warn('Bar chart waiting for data...');
     return;
   }
-  requestAnimationFrame(step);
-}
 
-function easeOutQuart(t) {
-  return 1 - (1 - t) ** 4;
-}
+  const ctx = canvas.getContext('2d');
+  const colors = getChartColors(STATE.theme);
 
-function setText(selector, text) {
-  const node = document.querySelector(selector);
-  if (node) node.textContent = text;
-}
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.labels || ['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'],
+      datasets: [
+        {
+          label: 'Median Rent (USD)',
+          data: data.values || [],
+          backgroundColor: colors.boroughColors,
+          borderWidth: 0,
+          borderRadius: 8,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: colors.background,
+          titleColor: colors.text,
+          bodyColor: colors.textMuted,
+          borderColor: colors.grid,
+          borderWidth: 1,
+          padding: 12,
+          displayColors: false,
+          callbacks: {
+            label: (context) => `$${context.parsed.y.toLocaleString()}/month`,
+          },
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: colors.textMuted,
+            callback: (value) => `$${value.toLocaleString()}`,
+          },
+          grid: { color: colors.grid },
+        },
+        x: {
+          ticks: { color: colors.textMuted },
+          grid: { display: false },
+        },
+      },
+    },
+  });
 
-function formatCurrency(value) {
-  const number = Number(value) || 0;
-  return `$${Math.round(number).toLocaleString()}`;
-}
+  STATE.chartInstances.set('bar', chart);
+  canvas.setAttribute('data-loaded', 'true');
+};
 
-function rangeFromGrowth(growthMap) {
-  const entries = Object.values(growthMap).filter(Boolean);
-  if (!entries.length) return 'n/a';
-  const min = Math.min(...entries.map((g) => g.pct));
-  const max = Math.max(...entries.map((g) => g.pct));
-  return `${min.toFixed(1)}%–${max.toFixed(1)}%`;
-}
+const createSmallMultiples = (data) => {
+  const container = document.querySelector('[data-chart-multiples]');
+  if (!container) return;
 
-function countRentOutpacesIncome(records, startYear, endYear) {
-  const boroughs = uniqueBoroughs(records);
-  let count = 0;
-  boroughs.forEach((borough) => {
-    const rentGrowth = percentChange(records, borough, 'median_rent', startYear, endYear);
-    const incomeGrowth = percentChange(records, borough, 'median_income', startYear, endYear);
-    if (rentGrowth !== null && incomeGrowth !== null && rentGrowth > incomeGrowth) {
-      count += 1;
+  if (!data) {
+    console.warn('Small multiples waiting for data...');
+    return;
+  }
+
+  const colors = getChartColors(STATE.theme);
+  container.innerHTML = '';
+
+  const boroughs = data.boroughs || Object.keys(data.series || {});
+
+  boroughs.forEach((borough, index) => {
+    const canvas = document.createElement('canvas');
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute('aria-label', `Rent trajectory for ${borough} from ${data.years?.[0] ?? 2010} to ${data.years?.slice(-1)[0] ?? 2024}`);
+    container.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    const values = data.series?.[borough] || [];
+    const years = data.years || Array.from({ length: values.length }, (_, i) => 2010 + i);
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: years,
+        datasets: [
+          {
+            label: borough,
+            data: values,
+            borderColor: colors.boroughColors[index % colors.boroughColors.length],
+            backgroundColor: `${colors.boroughColors[index % colors.boroughColors.length]}20`,
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: { color: colors.text, font: { size: 11, weight: '600' } },
+          },
+          tooltip: {
+            backgroundColor: colors.background,
+            titleColor: colors.text,
+            bodyColor: colors.textMuted,
+            borderColor: colors.grid,
+            borderWidth: 1,
+            padding: 8,
+            displayColors: false,
+            callbacks: {
+              label: (context) => `$${context.parsed.y.toLocaleString()}`,
+            },
+          },
+        },
+        scales: {
+          y: {
+            ticks: {
+              color: colors.textMuted,
+              font: { size: 10 },
+              callback: (value) => `$${(value / 1000).toFixed(1)}k`,
+            },
+            grid: { color: colors.grid },
+          },
+          x: {
+            ticks: {
+              color: colors.textMuted,
+              font: { size: 9 },
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 5,
+            },
+            grid: { display: false },
+          },
+        },
+      },
+    });
+
+    STATE.chartInstances.set(`multiple-${borough}`, chart);
+    canvas.setAttribute('data-loaded', 'true');
+  });
+};
+
+const createScatterChart = (data, period = '2010-2016') => {
+  const canvas = document.getElementById('chart-scatter');
+  if (!canvas) return;
+
+  if (!data) {
+    console.warn('Scatter chart waiting for data...');
+    return;
+  }
+
+  if (STATE.chartInstances.has('scatter')) {
+    STATE.chartInstances.get('scatter').destroy();
+  }
+
+  const ctx = canvas.getContext('2d');
+  const colors = getChartColors(STATE.theme);
+
+  const periodData = data[period] || [];
+
+  const chart = new Chart(ctx, {
+    type: 'bubble',
+    data: {
+      datasets: [
+        {
+          label: 'Borough Data',
+          data: periodData,
+          backgroundColor: colors.boroughColors.map((c) => `${c}60`),
+          borderColor: colors.boroughColors,
+          borderWidth: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: colors.background,
+          titleColor: colors.text,
+          bodyColor: colors.textMuted,
+          borderColor: colors.grid,
+          borderWidth: 1,
+          padding: 12,
+          displayColors: false,
+          callbacks: {
+            title: (context) => periodData[context[0].dataIndex]?.label ?? '',
+            label: (context) => [
+              `Income: $${context.parsed.x.toLocaleString()}`,
+              `Rent: $${context.parsed.y.toLocaleString()}`,
+              `Transit: ${Math.round((context.raw.r / 90) * 100)} index`,
+            ],
+          },
+        },
+      },
+      scales: {
+        y: {
+          title: {
+            display: true,
+            text: 'Median Rent (USD/month)',
+            color: colors.text,
+          },
+          ticks: {
+            color: colors.textMuted,
+            callback: (value) => `$${(value / 1000).toFixed(1)}k`,
+          },
+          grid: { color: colors.grid },
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Median Household Income (USD/year)',
+            color: colors.text,
+          },
+          ticks: {
+            color: colors.textMuted,
+            callback: (value) => `$${(value / 1000).toFixed(0)}k`,
+          },
+          grid: { color: colors.grid },
+        },
+      },
+    },
+  });
+
+  STATE.chartInstances.set('scatter', chart);
+  canvas.setAttribute('data-loaded', 'true');
+};
+
+const createHeatmapChart = (data) => {
+  const canvas = document.getElementById('chart-heatmap');
+  if (!canvas) return;
+
+  if (!data) {
+    console.warn('Heatmap chart waiting for data...');
+    return;
+  }
+
+  const ctx = canvas.getContext('2d');
+  const colors = getChartColors(STATE.theme);
+
+  const years = data.years || [];
+  const boroughs = data.boroughs || [];
+  const values = data.values || [];
+
+  const getColor = (value) => {
+    if (typeof value !== 'number' || Number.isNaN(value) || value === 0) {
+      return 'oklch(50% 0.02 250 / 0.25)';
+    }
+    const intensity = Math.min(Math.abs(value) / 8, 1.5);
+    if (value > 0) {
+      return `oklch(${70 - intensity * 20}% ${0.15 + intensity * 0.1} 60 / ${0.45 + intensity * 0.4})`;
+    }
+    return `oklch(${70 - intensity * 20}% ${0.15 + intensity * 0.1} 270 / ${0.45 + intensity * 0.4})`;
+  };
+
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: years,
+      datasets: boroughs.map((borough, idx) => ({
+        label: borough,
+        data: values[idx] || [],
+        backgroundColor: (values[idx] || []).map((v) => getColor(v)),
+        borderWidth: 1,
+        borderColor: colors.background,
+      })),
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            color: colors.text,
+            font: { size: 11 },
+            boxWidth: 12,
+            padding: 10,
+          },
+        },
+        tooltip: {
+          backgroundColor: colors.background,
+          titleColor: colors.text,
+          bodyColor: colors.textMuted,
+          borderColor: colors.grid,
+          borderWidth: 1,
+          padding: 12,
+          callbacks: {
+            label: (context) => `${context.dataset.label}: ${context.parsed.y > 0 ? '+' : ''}${context.parsed.y.toFixed(1)}%`,
+          },
+        },
+      },
+      scales: {
+        y: {
+          stacked: false,
+          ticks: {
+            color: colors.textMuted,
+            callback: (value) => `${value}%`,
+          },
+          grid: { color: colors.grid },
+        },
+        x: {
+          stacked: false,
+          ticks: {
+            color: colors.textMuted,
+            maxRotation: 45,
+            minRotation: 45,
+          },
+          grid: { display: false },
+        },
+      },
+    },
+  });
+
+  STATE.chartInstances.set('heatmap', chart);
+  canvas.setAttribute('data-loaded', 'true');
+};
+
+const initChartTabs = () => {
+  const tabs = document.querySelectorAll('[data-period-tab]');
+  if (!tabs.length) return;
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      tabs.forEach((t) => {
+        t.classList.remove('is-active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('is-active');
+      tab.setAttribute('aria-selected', 'true');
+
+      const period = tab.getAttribute('data-period-tab');
+      createScatterChart(STATE.data?.scatterData, period);
+    });
+  });
+};
+
+const refreshAllCharts = () => {
+  STATE.chartInstances.forEach((chart) => chart.destroy());
+  STATE.chartInstances.clear();
+
+  setTimeout(() => {
+    if (STATE.data) {
+      createBarChart(STATE.data.rentData);
+      createSmallMultiples(STATE.data.rentData);
+      const activePeriod = document.querySelector('[data-period-tab].is-active')?.getAttribute('data-period-tab') || '2010-2016';
+      createScatterChart(STATE.data.scatterData, activePeriod);
+      createHeatmapChart(STATE.data.heatmapData);
+    }
+  }, 100);
+};
+
+// =============================================================================
+// KPI & COUNTER ANIMATIONS - CALCULATES FROM YOUR DATA
+// =============================================================================
+
+const initKPIs = () => {
+  const kpis = {
+    'rent-delta': '—',
+    'wage-gap': '—',
+    'volatility-hotspots': '—',
+  };
+
+  Object.entries(kpis).forEach(([key, value]) => {
+    const element = document.querySelector(`[data-kpi="${key}"]`);
+    if (element) {
+      element.textContent = value;
     }
   });
-  return count;
-}
 
-function percentChange(records, borough, key, startYear, endYear) {
-  const start = records.find((row) => row.borough === borough && row.year === startYear);
-  const end = records.find((row) => row.borough === borough && row.year === endYear);
-  if (!start || !end || !Number.isFinite(start[key]) || !Number.isFinite(end[key])) return null;
-  return ((end[key] - start[key]) / start[key]) * 100;
-}
-
-function computeSpreadDelta(disparity) {
-  const years = Object.keys(disparity || {}).map(Number);
-  if (!years.length) return null;
-  const earliest = Math.min(...years);
-  const latest = Math.max(...years);
-  const earliestSpread = disparity[earliest]?.spread;
-  const latestSpread = disparity[latest]?.spread;
-  if (!Number.isFinite(earliestSpread) || !Number.isFinite(latestSpread)) return null;
-  return { delta: latestSpread - earliestSpread, latest: latestSpread, year: latest };
-}
-
-function prepareHeatmapDataset(dataset) {
-  if (!dataset || !Array.isArray(dataset.years)) {
-    return { years: [], boroughs: [], matrix: [] };
+  const counterElement = document.querySelector('[data-counter-value]');
+  if (counterElement) {
+    counterElement.dataset.counterTarget = '0';
+    counterElement.dataset.counterAnimated = 'false';
+    STATE.counterObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const target = Number(counterElement.dataset.counterTarget || '0');
+          animateCounter(counterElement, target, 2000);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.4 });
+    STATE.counterObserver.observe(counterElement);
   }
-  if (dataset.years.length <= 1) return dataset;
-  const years = dataset.years.slice(1);
-  const matrix = dataset.matrix.map((row) => row.slice(1));
-  return { ...dataset, years, matrix };
+};
+
+const updateKPIs = () => {
+  const summary = STATE.summary;
+  const rentData = STATE.data?.rentData;
+
+  const rentDeltaEl = document.querySelector('[data-kpi="rent-delta"]');
+  if (rentDeltaEl && summary?.rent_growth) {
+    const absoluteChanges = Object.values(summary.rent_growth).map((entry) => entry?.absolute ?? 0);
+    const avgChange = absoluteChanges.length
+      ? absoluteChanges.reduce((acc, value) => acc + value, 0) / absoluteChanges.length
+      : null;
+    rentDeltaEl.textContent = avgChange ? formatCurrency(avgChange) : '—';
+  }
+
+  const wageGapEl = document.querySelector('[data-kpi="wage-gap"]');
+  if (wageGapEl && summary?.rent_growth && summary?.income_growth) {
+    const rentPct = Object.values(summary.rent_growth).map((entry) => entry?.pct ?? 0);
+    const incomePct = Object.values(summary.income_growth).map((entry) => entry?.pct ?? 0);
+    const avgRentPct = rentPct.length
+      ? rentPct.reduce((acc, value) => acc + value, 0) / rentPct.length
+      : null;
+    const avgIncomePct = incomePct.length
+      ? incomePct.reduce((acc, value) => acc + value, 0) / incomePct.length
+      : null;
+    if (avgRentPct !== null && avgIncomePct !== null) {
+      wageGapEl.textContent = formatDifference(avgRentPct - avgIncomePct, ' pts');
+    }
+  }
+
+  const volatilityEl = document.querySelector('[data-kpi="volatility-hotspots"]');
+  if (volatilityEl && STATE.data?.heatmapData?.values) {
+    const threshold = 6;
+    const hotspots = STATE.data.heatmapData.values.reduce((total, row) => (
+      total + row.filter((value) => Math.abs(value) >= threshold).length
+    ), 0);
+    volatilityEl.textContent = hotspots ? hotspots.toString() : '—';
+  }
+
+  const counterElement = document.querySelector('[data-counter-value]');
+  if (counterElement && summary?.disparity_index) {
+    const years = Object.keys(summary.disparity_index).map((year) => Number(year)).sort((a, b) => a - b);
+    if (years.length) {
+      const firstSpread = summary.disparity_index[years[0]]?.spread ?? 0;
+      const lastSpread = summary.disparity_index[years[years.length - 1]]?.spread ?? 0;
+      const delta = lastSpread - firstSpread;
+      counterElement.dataset.counterTarget = String(delta);
+      if (counterElement.dataset.counterAnimated === 'true') {
+        counterElement.textContent = `+$${Math.round(delta).toLocaleString()}`;
+      }
+    }
+  }
+
+  const contextStat = document.querySelector('[data-context-stat]');
+  if (contextStat && summary?.disparity_index) {
+    const years = Object.keys(summary.disparity_index).map((year) => Number(year));
+    const span = years.length ? Math.max(...years) - Math.min(...years) + 1 : 0;
+    if (span) {
+      contextStat.textContent = `Analyzing ${span} years of borough-level data across ${rentData?.labels?.length ?? 5} NYC boroughs.`;
+    }
+  }
+};
+
+// =============================================================================
+// SMOOTH SCROLL & NAVIGATION
+// =============================================================================
+
+const initSmoothScroll = () => {
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener('click', function (e) {
+      const href = this.getAttribute('href');
+      if (!href || href === '#') return;
+
+      const target = document.querySelector(href);
+      if (!target) return;
+
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (!target.hasAttribute('tabindex')) {
+        target.setAttribute('tabindex', '-1');
+      }
+      target.focus({ preventScroll: true });
+    });
+  });
+};
+
+// =============================================================================
+// KEYBOARD NAVIGATION
+// =============================================================================
+
+const initKeyboardNav = () => {
+  const tabLists = document.querySelectorAll('[role="tablist"]');
+
+  tabLists.forEach((tabList) => {
+    const tabs = Array.from(tabList.querySelectorAll('[role="tab"]'));
+
+    tabList.addEventListener('keydown', (e) => {
+      const currentIndex = tabs.indexOf(document.activeElement);
+      let nextIndex = currentIndex;
+
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          e.preventDefault();
+          nextIndex = (currentIndex + 1) % tabs.length;
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault();
+          nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+          break;
+        case 'Home':
+          e.preventDefault();
+          nextIndex = 0;
+          break;
+        case 'End':
+          e.preventDefault();
+          nextIndex = tabs.length - 1;
+          break;
+        default:
+          return;
+      }
+
+      const targetTab = tabs[nextIndex];
+      targetTab.focus();
+      targetTab.click();
+    });
+  });
+};
+
+// =============================================================================
+// ERROR HANDLING
+// =============================================================================
+
+const initErrorHandling = () => {
+  window.addEventListener('error', (e) => {
+    console.error('Global error:', e.error);
+  });
+
+  window.addEventListener('unhandledrejection', (e) => {
+    console.error('Unhandled promise rejection:', e.reason);
+  });
+};
+
+// =============================================================================
+// INITIALIZATION
+// =============================================================================
+
+const init = async () => {
+  try {
+    initTheme();
+    initDensity();
+    initScrollProgress();
+    initScrollAnimations();
+    initSmoothScroll();
+    initKeyboardNav();
+    initKPIs();
+    initErrorHandling();
+
+    await loadData();
+
+    if (typeof Chart !== 'undefined') {
+      requestAnimationFrame(() => {
+        if (STATE.data) {
+          createBarChart(STATE.data.rentData);
+          createSmallMultiples(STATE.data.rentData);
+          createScatterChart(STATE.data.scatterData);
+          createHeatmapChart(STATE.data.heatmapData);
+          initChartTabs();
+          updateKPIs();
+        } else {
+          console.warn('Charts waiting for data to be provided');
+        }
+      });
+    } else {
+      console.warn('Chart.js not loaded');
+    }
+
+    console.log('NYC Housing Dynamics initialized successfully');
+  } catch (error) {
+    console.error('Initialization error:', error);
+  }
+};
+
+// =============================================================================
+// DOM READY
+// =============================================================================
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
 }
+
+// =============================================================================
+// EXPORTS & GLOBAL ACCESS
+// =============================================================================
+
+window.nycHousing = {
+  loadChartData: (rentData, scatterData, heatmapData, summary = null) => {
+    STATE.data = { rentData, scatterData, heatmapData };
+    STATE.summary = summary;
+    refreshAllCharts();
+    updateKPIs();
+  },
+  STATE,
+  refreshAllCharts,
+};
+
+export { init, STATE, refreshAllCharts };
