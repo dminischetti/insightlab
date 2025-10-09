@@ -17,17 +17,28 @@ const state = {
   yoy: null,
   derivedPayload: null,
   records: [],
-  boroughMeta: {}
+  boroughMeta: {},
+  totalBoroughs: 0 // Stores dataset breadth for HUD copy changes.
 };
+
+let heatmapResizeBound = false;
+let heatmapResizeFrame = null;
+let activeNavTarget = null;
 
 const dataUrl = (file) => new URL(`../data/${file}`, import.meta.url).href;
 
 async function bootstrap() {
   initThemeToggle(document.querySelector('[data-theme-toggle]'));
+  document.body.classList.add('compact-mode');
+  initQuickNav();
+  initLayoutToggle();
+  observeSections();
+  initBackToTop();
 
   const { records, boroughMeta, baseSummary } = await loadAllData();
   state.records = records;
   state.boroughMeta = boroughMeta;
+  state.totalBoroughs = Object.keys(boroughMeta ?? {}).length;
   state.summary = summarize(records);
   state.yoy = state.summary.yoy;
   state.derivedPayload = buildSummaryPayload(baseSummary, state.summary);
@@ -58,9 +69,9 @@ function initialiseCharts(records) {
   if (lineCtx) initLineChart(lineCtx, records);
   if (scatterCtx) initScatterChart(scatterCtx, records, Array.from(new Set(records.map((row) => row.borough))));
   if (heatmapCanvas) {
-    heatmapCanvas.width = heatmapCanvas.clientWidth * window.devicePixelRatio;
-    heatmapCanvas.height = 420 * window.devicePixelRatio;
     initHeatmap(heatmapCanvas, records, 'median_rent', state.yoy);
+    scheduleHeatmapResize();
+    bindHeatmapResize();
   }
 }
 
@@ -79,6 +90,7 @@ function initialiseFilters(records) {
       updateNarrativeList(filters);
       updateKeyTakeaways(filters);
       updateDerivedInsights(filters);
+      scheduleHeatmapResize();
     }
   });
 }
@@ -143,6 +155,97 @@ function triggerDownload(url, name) {
   document.body.removeChild(link);
 }
 
+function bindHeatmapResize() {
+  if (heatmapResizeBound) return;
+  heatmapResizeBound = true;
+  window.addEventListener('resize', () => scheduleHeatmapResize());
+}
+
+function scheduleHeatmapResize() {
+  if (heatmapResizeFrame) cancelAnimationFrame(heatmapResizeFrame);
+  heatmapResizeFrame = requestAnimationFrame(() => {
+    if (!state.records.length) return;
+    const metric = state.filters?.metric ?? 'median_rent';
+    const payload = metric === 'rent_growth' ? state.yoy : null;
+    updateHeatmap(state.records, metric, payload);
+    heatmapResizeFrame = null;
+  });
+}
+
+function initQuickNav() {
+  document.querySelectorAll('[data-scroll-target]').forEach((control) => {
+    control.addEventListener('click', (event) => {
+      const targetSelector = control.dataset.scrollTarget;
+      if (!targetSelector) return;
+      const target = document.querySelector(targetSelector);
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setActiveNav(targetSelector);
+    });
+  });
+}
+
+function initLayoutToggle() {
+  const toggle = document.querySelector('[data-layout-toggle]');
+  if (!toggle) return;
+  toggle.setAttribute('aria-pressed', String(document.body.classList.contains('compact-mode')));
+  toggle.addEventListener('click', () => {
+    const compact = document.body.classList.toggle('compact-mode');
+    toggle.setAttribute('aria-pressed', String(compact));
+    scheduleHeatmapResize();
+  });
+}
+
+function initBackToTop() {
+  const backTop = document.getElementById('back-top');
+  if (!backTop) return;
+  const toggleVisibility = () => {
+    if (window.scrollY > 320) {
+      backTop.classList.add('is-visible');
+    } else {
+      backTop.classList.remove('is-visible');
+    }
+  };
+  window.addEventListener('scroll', toggleVisibility, { passive: true });
+  toggleVisibility();
+  backTop.addEventListener('click', () =>
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  );
+}
+
+function observeSections() {
+  const sections = document.querySelectorAll('[data-nav-section][id]');
+  if (!sections.length) return;
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (visible.length) {
+        setActiveNav(`#${visible[0].target.id}`);
+      }
+    },
+    {
+      rootMargin: '-40% 0px -50% 0px',
+      threshold: 0.2
+    }
+  );
+  sections.forEach((section) => observer.observe(section));
+}
+
+function setActiveNav(targetSelector) {
+  if (activeNavTarget === targetSelector) return;
+  activeNavTarget = targetSelector;
+  document.querySelectorAll('[data-scroll-target]').forEach((button) => {
+    if (button.dataset.scrollTarget === targetSelector) {
+      button.setAttribute('aria-current', 'true');
+    } else {
+      button.removeAttribute('aria-current');
+    }
+  });
+}
+
 function updateHUD(filters) {
   const yearTarget = document.querySelector('[data-hud-year]');
   const boroughTarget = document.querySelector('[data-hud-boroughs]');
@@ -151,11 +254,18 @@ function updateHUD(filters) {
 
   if (!filters) return;
   const year = filters.year;
-  const boroughs = filters.boroughs;
+  const boroughs = filters.boroughs?.length ? filters.boroughs : Object.keys(state.summary?.growth ?? {});
+  const boroughCount = boroughs.length;
   const metrics = latestMetrics(state.records, year, boroughs);
 
   if (yearTarget) yearTarget.textContent = year;
-  if (boroughTarget) boroughTarget.textContent = boroughs.join(', ');
+  if (boroughTarget) {
+    if (state.totalBoroughs && boroughCount === state.totalBoroughs) {
+      boroughTarget.textContent = 'All boroughs';
+    } else {
+      boroughTarget.textContent = boroughs.join(', ');
+    }
+  }
   if (spreadTarget && metrics.rank.length) {
     const top = metrics.rank[0];
     const bottom = metrics.rank[metrics.rank.length - 1];
