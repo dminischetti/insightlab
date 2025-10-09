@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime as _dt
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,6 +13,31 @@ import pandas as pd
 import statsmodels.api as sm
 from statsmodels.stats.diagnostic import het_breuschpagan
 from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+
+def _to_native(obj):
+    """Recursively convert numpy/pandas/python objects to JSON-serializable natives."""
+
+    import numpy as _np
+    import pandas as _pd
+
+    if isinstance(obj, (str, int, float, bool)) or obj is None:
+        return obj
+    if isinstance(obj, (_np.integer,)):
+        return int(obj)
+    if isinstance(obj, (_np.floating,)):
+        return float(obj)
+    if isinstance(obj, (_np.bool_,)):
+        return bool(obj)
+    if isinstance(obj, (_np.ndarray,)):
+        return [_to_native(x) for x in obj.tolist()]
+    if isinstance(obj, (_pd.Timestamp, _dt.datetime, _dt.date)):
+        return obj.isoformat()
+    if isinstance(obj, dict):
+        return {str(k): _to_native(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple, set)):
+        return [_to_native(x) for x in obj]
+    return str(obj)
 
 DATA = Path("data/nyc_median_rent.csv")
 OUT_DERIVED = Path("data/derived_summary.json")
@@ -144,7 +170,7 @@ def compute_correlations(df: pd.DataFrame) -> Dict[str, float]:
 def compute_regression(df: pd.DataFrame, latest_year: int) -> RegressionSnapshot:
     """Fit a 5-year OLS window and collect diagnostics."""
 
-    window_years = [year for year in sorted(df["year"].unique()) if year >= latest_year - 4]
+    window_years = [int(year) for year in sorted(df["year"].unique()) if int(year) >= latest_year - 4]
     window_df = df[df["year"].isin(window_years)].copy()
     if window_df.empty:
         raise ValueError("Insufficient data for regression window")
@@ -360,6 +386,7 @@ def write_json(path: Path, payload: Dict[str, object]) -> None:
     """Serialize JSON with UTF-8 encoding."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
+    payload = _to_native(payload)
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 

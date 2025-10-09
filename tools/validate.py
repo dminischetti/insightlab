@@ -33,6 +33,16 @@ def main() -> None:
 
     print("[validate] basic checks OK")
 
+    import json
+    import pathlib
+
+    for path_str in ["data/derived_summary.json", "data/viz_payload.json"]:
+        path_obj = pathlib.Path(path_str)
+        if path_obj.exists():
+            json.loads(path_obj.read_text(encoding="utf-8"))
+
+    print("[validate] json round-trip OK")
+
 
 if __name__ == "__main__":
     main()
