@@ -1,82 +1,94 @@
-import { uniqueYears, groupByBorough, filterRecords, compileScatter, heatmapData } from './analysis.js';
+import { groupByBorough } from './analysis.js';
 
-const boroughColors = {
-  Manhattan: '#f97316',
-  Brooklyn: '#6366f1',
-  Queens: '#22d3ee',
-  Bronx: '#facc15',
-  'Staten Island': '#38bdf8'
+const boroughPalette = {
+  Manhattan: '#38bdf8',
+  Brooklyn: '#0ea5e9',
+  Queens: '#6366f1',
+  Bronx: '#4f46e5',
+  'Staten Island': '#312e81'
 };
 
-const charts = {
+const chartStore = {
   bar: null,
   line: null,
   scatter: null,
   heatmap: null
 };
 
-function withOpacity(hex, opacity) {
-  const bigint = parseInt(hex.replace('#', ''), 16);
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function withOpacity(hex, alpha) {
+  const value = hex.replace('#', '');
+  const bigint = parseInt(value, 16);
   const r = (bigint >> 16) & 255;
   const g = (bigint >> 8) & 255;
   const b = bigint & 255;
-  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 function chartDefaults() {
+  const gridColor = cssVar('--grid-line') || 'rgba(148,163,184,0.25)';
+  const axisColor = cssVar('--fg-muted') || '#94a3b8';
+  const labelColor = cssVar('--fg') || '#e2e8f0';
   return {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: { padding: 8 },
     plugins: {
       legend: {
-        labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--fg') }
+        position: 'bottom',
+        labels: { color: labelColor, usePointStyle: true, pointStyle: 'circle' }
       },
       tooltip: {
-        backgroundColor: withOpacity('#0f172a', document.body.classList.contains('light-mode') ? 0.85 : 0.92),
-        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--border'),
+        backgroundColor: cssVar('--bg-overlay') || 'rgba(15,23,42,0.92)',
+        borderColor: cssVar('--border') || 'rgba(148,163,184,0.25)',
         borderWidth: 1,
-        padding: 12,
         titleColor: '#f8fafc',
         bodyColor: '#f8fafc',
+        padding: 12,
         displayColors: true
       }
     },
     scales: {
       x: {
-        grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--chart-grid') },
-        ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--fg-muted') }
+        grid: { color: gridColor },
+        ticks: { color: axisColor, maxRotation: 0, autoSkipPadding: 12 }
       },
       y: {
-        grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--chart-grid') },
-        ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--fg-muted') }
+        grid: { color: gridColor },
+        ticks: { color: axisColor }
       }
     }
   };
 }
 
-export function initBarChart(ctx, initialData, year) {
-  const config = {
+export function initBarChart(canvas, rows, year) {
+  const ctx = canvas.getContext('2d');
+  const dataset = {
+    label: `Median rent (${year})`,
+    data: rows.map((row) => row.median_rent),
+    backgroundColor: rows.map((row) => withOpacity(boroughPalette[row.borough] ?? '#38bdf8', 0.85)),
+    borderRadius: 14,
+    borderSkipped: false
+  };
+
+  chartStore.bar = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: initialData.map((row) => row.borough),
-      datasets: [
-        {
-          label: `Median Rent (${year})`,
-          data: initialData.map((row) => row.median_rent),
-          backgroundColor: initialData.map((row) => withOpacity(boroughColors[row.borough], 0.85)),
-          borderRadius: 12
-        }
-      ]
+      labels: rows.map((row) => row.borough),
+      datasets: [dataset]
     },
     options: {
       ...chartDefaults(),
-      responsive: true,
-      maintainAspectRatio: false,
       plugins: {
         ...chartDefaults().plugins,
         legend: { display: false },
         tooltip: {
           ...chartDefaults().plugins.tooltip,
           callbacks: {
-            label: (ctx) => `${ctx.label}: $${Number(ctx.raw).toLocaleString()}`
+            label: (context) => `${context.label}: $${Number(context.raw).toLocaleString()}`
           }
         }
       },
@@ -84,52 +96,46 @@ export function initBarChart(ctx, initialData, year) {
         ...chartDefaults().scales,
         y: {
           ...chartDefaults().scales.y,
-          beginAtZero: true
+          beginAtZero: true,
+          ticks: {
+            ...chartDefaults().scales.y.ticks,
+            callback: (value) => `$${Number(value).toLocaleString()}`
+          }
         }
       }
     }
-  };
-  charts.bar = new Chart(ctx, config);
-  return charts.bar;
+  });
+  return chartStore.bar;
 }
 
-export function updateBarChart(data, year) {
-  if (!charts.bar) return;
-  charts.bar.data.labels = data.map((row) => row.borough);
-  charts.bar.data.datasets[0].label = `Median Rent (${year})`;
-  charts.bar.data.datasets[0].data = data.map((row) => row.median_rent);
-  charts.bar.data.datasets[0].backgroundColor = data.map((row) => withOpacity(boroughColors[row.borough], 0.85));
-  charts.bar.update();
-}
-
-export function initLineChart(ctx, records) {
-  const years = uniqueYears(records);
+export function initLineChart(canvas, records, years, boroughs) {
+  const ctx = canvas.getContext('2d');
   const grouped = groupByBorough(records);
-  const datasets = Object.entries(grouped).map(([borough, rows]) => ({
+  Object.values(grouped).forEach((rows) => rows.sort((a, b) => a.year - b.year));
+  const datasets = boroughs.map((borough) => ({
     label: borough,
     data: years.map((year) => {
-      const entry = rows.find((row) => row.year === year);
-      return entry ? entry.median_rent : null;
+      const match = grouped[borough]?.find((row) => row.year === year);
+      return match ? match.median_rent : null;
     }),
-    borderColor: boroughColors[borough],
-    backgroundColor: withOpacity(boroughColors[borough], 0.35),
-    tension: 0.35,
+    borderColor: boroughPalette[borough] ?? '#38bdf8',
+    backgroundColor: withOpacity(boroughPalette[borough] ?? '#38bdf8', 0.25),
+    tension: 0.3,
+    pointRadius: 0,
     spanGaps: true
   }));
 
-  const config = {
+  chartStore.line = new Chart(ctx, {
     type: 'line',
     data: { labels: years, datasets },
     options: {
       ...chartDefaults(),
-      responsive: true,
-      maintainAspectRatio: false,
       plugins: {
         ...chartDefaults().plugins,
         tooltip: {
           ...chartDefaults().plugins.tooltip,
           callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: $${Number(ctx.raw).toLocaleString()} (${ctx.label})`
+            label: (context) => `${context.dataset.label}: $${Number(context.raw).toLocaleString()} (${context.label})`
           }
         }
       },
@@ -137,59 +143,50 @@ export function initLineChart(ctx, records) {
         ...chartDefaults().scales,
         y: {
           ...chartDefaults().scales.y,
-          beginAtZero: false
+          ticks: {
+            ...chartDefaults().scales.y.ticks,
+            callback: (value) => `$${Number(value).toLocaleString()}`
+          }
         }
       }
     }
-  };
-  charts.line = new Chart(ctx, config);
-  return charts.line;
+  });
+  return chartStore.line;
 }
 
-export function updateLineChart(records, boroughs) {
-  if (!charts.line) return;
-  const years = uniqueYears(records);
-  charts.line.data.labels = years;
-  charts.line.data.datasets = boroughs.map((borough) => ({
-    label: borough,
-    data: years.map((year) => {
-      const match = records.find((row) => row.year === year && row.borough === borough);
-      return match ? match.median_rent : null;
-    }),
-    borderColor: boroughColors[borough],
-    backgroundColor: withOpacity(boroughColors[borough], 0.3),
-    tension: 0.35,
-    spanGaps: true
-  }));
-  charts.line.update();
-}
-
-export function initScatterChart(ctx, records, boroughs) {
-  const points = compileScatter(records, boroughs);
-  const config = {
+export function initScatterChart(canvas, points) {
+  const ctx = canvas.getContext('2d');
+  const boroughs = [...new Set(points.map((point) => point.borough))];
+  chartStore.scatter = new Chart(ctx, {
     type: 'bubble',
     data: {
       datasets: boroughs.map((borough) => ({
         label: borough,
         data: points.filter((point) => point.borough === borough),
-        backgroundColor: withOpacity(boroughColors[borough], 0.8),
-        borderColor: boroughColors[borough],
-        borderWidth: 1
+        parsing: false,
+        backgroundColor: withOpacity(boroughPalette[borough] ?? '#6366f1', 0.75),
+        borderColor: boroughPalette[borough] ?? '#6366f1',
+        borderWidth: 1.5
       }))
     },
     options: {
       ...chartDefaults(),
-      responsive: true,
-      maintainAspectRatio: false,
       scales: {
-        ...chartDefaults().scales,
         x: {
           ...chartDefaults().scales.x,
-          title: { display: true, text: 'Median Household Income (USD)', color: getComputedStyle(document.documentElement).getPropertyValue('--fg-muted') }
+          title: { display: true, text: 'Median household income (USD)', color: cssVar('--fg-muted') || '#94a3b8' },
+          ticks: {
+            ...chartDefaults().scales.x.ticks,
+            callback: (value) => `$${Number(value).toLocaleString()}`
+          }
         },
         y: {
           ...chartDefaults().scales.y,
-          title: { display: true, text: 'Median Rent (USD)', color: getComputedStyle(document.documentElement).getPropertyValue('--fg-muted') }
+          title: { display: true, text: 'Median rent (USD per month)', color: cssVar('--fg-muted') || '#94a3b8' },
+          ticks: {
+            ...chartDefaults().scales.y.ticks,
+            callback: (value) => `$${Number(value).toLocaleString()}`
+          }
         }
       },
       plugins: {
@@ -197,119 +194,114 @@ export function initScatterChart(ctx, records, boroughs) {
         tooltip: {
           ...chartDefaults().plugins.tooltip,
           callbacks: {
-            label: (ctx) => {
-              const data = ctx.raw;
-              return `${ctx.dataset.label} • ${data.year}: $${Number(data.y).toLocaleString()} rent vs $${Number(data.x).toLocaleString()} income (Subway ${data.subway}, AQI ${data.airQuality})`;
+            label: (context) => {
+              const { raw } = context;
+              return `${context.dataset.label} ${raw.year}: $${Number(raw.y).toLocaleString()} rent vs $${Number(raw.x).toLocaleString()} income (Transit ${raw.subway})`;
             }
           }
         }
       }
     }
-  };
-  charts.scatter = new Chart(ctx, config);
-  return charts.scatter;
+  });
+  return chartStore.scatter;
 }
 
-export function updateScatterChart(records, boroughs) {
-  if (!charts.scatter) return;
-  const points = compileScatter(records, boroughs);
-  charts.scatter.data.datasets = boroughs.map((borough) => ({
-    label: borough,
-    data: points.filter((point) => point.borough === borough),
-    backgroundColor: withOpacity(boroughColors[borough], 0.8),
-    borderColor: boroughColors[borough],
-    borderWidth: 1
-  }));
-  charts.scatter.update();
-}
-
-export function initHeatmap(canvas, records, metric = 'median_rent', yoy = null) {
-  resizeCanvas(canvas);
-  charts.heatmap = {
+export function initHeatmap(canvas, dataset) {
+  chartStore.heatmap = {
     canvas,
-    ctx: canvas.getContext('2d'),
-    metric,
-    yoy,
-    data: heatmapData(records, metric, yoy)
+    dataset
   };
   drawHeatmap();
-  return charts.heatmap;
-}
-
-export function updateHeatmap(records, metric = 'median_rent', yoy = null) {
-  if (!charts.heatmap) return;
-  resizeCanvas(charts.heatmap.canvas);
-  charts.heatmap.metric = metric;
-  charts.heatmap.yoy = yoy;
-  charts.heatmap.data = heatmapData(records, metric, yoy);
-  drawHeatmap();
-}
-
-function resizeCanvas(canvas) {
-  const ratio = window.devicePixelRatio || 1;
-  const displayWidth = canvas.clientWidth || canvas.width;
-  const displayHeight = canvas.clientHeight || 420;
-  canvas.width = displayWidth * ratio;
-  canvas.height = displayHeight * ratio;
+  window.addEventListener('resize', drawHeatmap);
+  return chartStore.heatmap;
 }
 
 function drawHeatmap() {
-  if (!charts.heatmap) return;
-  const { canvas, ctx, data, metric } = charts.heatmap;
+  const instance = chartStore.heatmap;
+  if (!instance) return;
+  const { canvas, dataset } = instance;
   const ratio = window.devicePixelRatio || 1;
-  const padding = 60;
-  const { years, boroughs, matrix } = data;
-  const width = canvas.width / ratio;
-  const height = canvas.height / ratio;
+  const ctx = canvas.getContext('2d');
+  const { years, boroughs, matrix } = dataset;
+  const paddingX = 70;
+  const paddingY = 60;
+  const width = canvas.clientWidth || canvas.offsetWidth || 600;
+  const height = canvas.clientHeight || canvas.offsetHeight || 360;
+  canvas.width = width * ratio;
+  canvas.height = height * ratio;
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   ctx.clearRect(0, 0, width, height);
+
+  const cellWidth = (width - paddingX) / years.length;
+  const cellHeight = (height - paddingY) / boroughs.length;
+  const allValues = matrix.flat().filter((value) => value !== null && value !== undefined);
+  if (!allValues.length) return;
+  const min = Math.min(...allValues);
+  const max = Math.max(...allValues);
+  const axisColor = cssVar('--fg-muted') || '#94a3b8';
+  const textColor = cssVar('--fg') || '#e2e8f0';
   ctx.font = '12px Inter';
-  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--fg');
-  const cellWidth = (width - padding) / years.length;
-  const cellHeight = (height - padding) / boroughs.length;
-  const values = matrix.flat().filter((v) => v !== null);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  ctx.fillStyle = axisColor;
 
-  boroughs.forEach((borough, i) => {
-    ctx.fillText(borough, 4, padding + i * cellHeight + cellHeight / 1.5);
-  });
-  years.forEach((year, j) => {
-    ctx.fillText(year, padding + j * cellWidth + cellWidth / 2.8, 20);
+  years.forEach((year, index) => {
+    const textX = paddingX + index * cellWidth + cellWidth / 2 - 12;
+    ctx.fillText(year, textX, 20);
   });
 
-  matrix.forEach((row, i) => {
-    row.forEach((value, j) => {
+  boroughs.forEach((borough, index) => {
+    ctx.fillText(borough, 10, paddingY + index * cellHeight + cellHeight / 1.7);
+  });
+
+  matrix.forEach((row, rowIndex) => {
+    row.forEach((value, columnIndex) => {
+      if (value === null || value === undefined) return;
       const t = (value - min) / (max - min || 1);
-      const color = heatColor(t);
+      const color = interpolateColor('#38bdf8', '#6366f1', t);
       ctx.fillStyle = color;
-      ctx.fillRect(padding + j * cellWidth, padding + i * cellHeight, cellWidth - 4, cellHeight - 4);
-      ctx.fillStyle = t > 0.55 ? '#0f172a' : '#f8fafc';
-      const textValue = metric === 'rent_growth' ? `${Number(value).toFixed(1)}%` : `$${Number(value).toLocaleString()}`;
-      ctx.fillText(textValue, padding + j * cellWidth + 6, padding + i * cellHeight + cellHeight / 1.7);
+      const x = paddingX + columnIndex * cellWidth;
+      const y = paddingY + rowIndex * cellHeight;
+      ctx.fillRect(x, y, cellWidth - 6, cellHeight - 6);
+      ctx.fillStyle = t > 0.55 ? '#0b1221' : textColor;
+      ctx.fillText(`${Number(value).toFixed(1)}%`, x + 8, y + cellHeight / 1.7);
     });
   });
 }
 
-function heatColor(t) {
-  const start = [56, 189, 248];
-  const end = [147, 51, 234];
-  const r = Math.round(start[0] + (end[0] - start[0]) * t);
-  const g = Math.round(start[1] + (end[1] - start[1]) * t);
-  const b = Math.round(start[2] + (end[2] - start[2]) * t);
+function interpolateColor(startHex, endHex, t) {
+  const start = hexToRgb(startHex);
+  const end = hexToRgb(endHex);
+  const r = Math.round(start.r + (end.r - start.r) * t);
+  const g = Math.round(start.g + (end.g - start.g) * t);
+  const b = Math.round(start.b + (end.b - start.b) * t);
   return `rgba(${r}, ${g}, ${b}, 0.85)`;
+}
+
+function hexToRgb(hex) {
+  const value = hex.replace('#', '');
+  const bigint = parseInt(value, 16);
+  return {
+    r: (bigint >> 16) & 255,
+    g: (bigint >> 8) & 255,
+    b: bigint & 255
+  };
 }
 
 export function refreshThemes() {
   const defaults = chartDefaults();
-  ['bar', 'line', 'scatter'].forEach((key) => {
-    if (!charts[key]) return;
-    charts[key].options.scales = defaults.scales;
-    charts[key].options.plugins.tooltip = defaults.plugins.tooltip;
-    if (charts[key].options.plugins.legend) {
-      charts[key].options.plugins.legend.labels = defaults.plugins.legend.labels;
-    }
-    charts[key].update();
-  });
+  if (chartStore.bar) {
+    chartStore.bar.options.scales = defaults.scales;
+    chartStore.bar.options.plugins.tooltip = defaults.plugins.tooltip;
+    chartStore.bar.update();
+  }
+  if (chartStore.line) {
+    chartStore.line.options.scales = defaults.scales;
+    chartStore.line.options.plugins.tooltip = defaults.plugins.tooltip;
+    chartStore.line.update();
+  }
+  if (chartStore.scatter) {
+    chartStore.scatter.options.scales = defaults.scales;
+    chartStore.scatter.options.plugins.tooltip = defaults.plugins.tooltip;
+    chartStore.scatter.update();
+  }
   drawHeatmap();
 }
