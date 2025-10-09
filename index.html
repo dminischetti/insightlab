@@ -4,9 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>InsightLab: NYC Housing Dynamics</title>
-    <meta name="description" content="How income, transport, and environment shape rent trends across New York City boroughs." />
+    <meta
+      name="description"
+      content="InsightLab is a data-driven case study where Jordan Chen blends analytics and engineering to decode how income, transit, and environment shape rent trends across New York City."
+    />
     <meta property="og:title" content="InsightLab: NYC Housing Dynamics" />
-    <meta property="og:description" content="A rigorous case study exploring how income, transport, and environment shape rent trends across NYC boroughs." />
+    <meta
+      property="og:description"
+      content="A rigorous case study exploring how income, transport, and environment shape rent trends across NYC boroughs."
+    />
     <meta property="og:type" content="website" />
     <meta
       property="og:image"
@@ -15,7 +21,10 @@
     <link rel="icon" type="image/svg+xml" href="./assets/logo.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+Pro:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
     <script>
       (function () {
         const originalWarn = console.warn;
@@ -34,8 +43,9 @@
     <script type="module" src="./js/main.js" defer></script>
   </head>
   <body data-page="index">
+    <a class="skip-link" href="#story">Skip to the insight narrative</a>
     <p class="elevator-pitch">
-      Exploring how income, transport, and environment shaped NYC’s rent dynamics — built from scratch by a data-driven backend developer.
+      Exploring how income, transport, and environment reshape NYC’s rent dynamics — engineered and narrated by a data-first full-stack analyst.
     </p>
     <div class="hud" role="status" aria-live="polite">
       <strong>At a glance</strong>
@@ -46,48 +56,178 @@
       <span class="text-xs text-slate-400">Scrollytelling step <span data-hud-step>1</span>/5</span>
     </div>
 
-    <header class="hero">
+    <header class="hero" role="banner">
       <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
         <img src="./assets/icons/theme.svg" alt="Theme" />
       </button>
-      <img src="./assets/logo.svg" alt="InsightLab logo" style="width: 160px" />
-      <h1>InsightLab: NYC Housing Dynamics</h1>
-      <p>
-        How income, transport, and environment shape rent trends. Dive into a fourteen-year view of New York City’s borough markets,
-        rendered with analyst-grade methods and developer precision.
-      </p>
-      <p class="tagline">InsightLab is a full-stack, data-driven storytelling platform built to explore NYC housing over 14 years — showcasing end-to-end data engineering, statistical modeling, and interactive visualization.</p>
-      <div class="hero-actions">
-        <a class="btn-primary" href="./study.html">Explore the Study</a>
-        <a class="btn-secondary" href="#story" aria-describedby="hero-cta-desc">See the headline findings</a>
-        <span id="hero-cta-desc" class="visually-hidden">Scroll to the story section to view key charts and insights.</span>
+      <div class="hero-grid">
+        <div class="hero-main">
+          <div class="hero-topline">
+            <img src="./assets/logo.svg" alt="InsightLab logo" class="hero-logo" />
+            <span class="eyebrow">Flagship case study · Jordan Chen</span>
+          </div>
+          <h1>InsightLab: NYC Housing Dynamics</h1>
+          <p>
+            A narrative analytics experience tracing how affordability shifted across New York City’s boroughs from 2010–2024. Every interaction, chart, and insight mirrors the production stack I ship in practice.
+          </p>
+          <p class="tagline">
+            Built end-to-end: ETL in PHP and PostgreSQL, spatial joins through GeoJSON, and a static deployment tuned for GitHub Pages — so hiring teams see both the analytical mind and the engineering finish.
+          </p>
+          <div class="hero-actions">
+            <a class="btn-primary" href="./study.html">Explore the Study</a>
+            <a class="btn-secondary" href="#story" aria-describedby="hero-cta-desc">See the headline findings</a>
+            <span id="hero-cta-desc" class="visually-hidden">Scroll to the story section to view key charts and insights.</span>
+          </div>
+          <ul class="hero-stats" role="list">
+            <li>
+              <span class="hero-stat-label">Observation window</span>
+              <span class="hero-stat-value">14 years · 60 borough slices</span>
+            </li>
+            <li>
+              <span class="hero-stat-label">Stack in action</span>
+              <span class="hero-stat-value">PHP ETL → PostgreSQL → Chart.js</span>
+            </li>
+            <li>
+              <span class="hero-stat-label">Questions answered</span>
+              <span class="hero-stat-value">Where does rent diverge — and why?</span>
+            </li>
+          </ul>
+        </div>
+        <aside class="hero-aside" aria-label="Project spotlight">
+          <h2>Why it stands out</h2>
+          <p>
+            I treated housing volatility like a client engagement: framed the decision risk, engineered reliable data flows, and translated statistical evidence into an interactive story recruiters can skim or study.
+          </p>
+          <ul class="spotlight-list" role="list">
+            <li><strong>Decision focus:</strong> Identify which levers — income, transit, environment — most explain rent pressure.</li>
+            <li><strong>Time-to-insight:</strong> 4 weeks from ingestion scripts to polished narrative, working solo.</li>
+            <li><strong>Result:</strong> A reusable storytelling scaffold I now adapt for enterprise housing portfolios.</li>
+          </ul>
+        </aside>
       </div>
     </header>
 
+    <nav class="story-nav" aria-label="Case study navigation">
+      <ul>
+        <li><button type="button" data-scroll-target="#case-overview" aria-current="true">Overview</button></li>
+        <li><button type="button" data-scroll-target="#filters">Filters</button></li>
+        <li><button type="button" data-scroll-target="#rent-story">Median rent</button></li>
+        <li><button type="button" data-scroll-target="#rent-trajectories">Trends</button></li>
+        <li><button type="button" data-scroll-target="#income-rent">Income vs. rent</button></li>
+        <li><button type="button" data-scroll-target="#heatmap-insights">Heatmap</button></li>
+        <li><button type="button" data-scroll-target="#project-dossier">Dossier</button></li>
+      </ul>
+      <div class="story-nav-cta">
+        <button type="button" class="nav-toggle" data-layout-toggle aria-pressed="false">
+          <span aria-hidden="true">⇅</span>
+          Compact view
+        </button>
+      </div>
+    </nav>
+
     <main id="story">
-      <section class="tech-bubble" aria-labelledby="tech-data-title">
-        <h2 id="tech-data-title">Tech &amp; Data Stack</h2>
-        <p class="text-block">
-          Built with a PHP ETL backend, PostgreSQL + GeoJSON spatial layers, and D3.js with vanilla JavaScript on the front-end. All content ships statically here via CDN modules while mirroring the production pipeline.
-        </p>
-        <div class="tech-grid" role="list">
-          <div class="tech-card" role="listitem">
-            <h3>Engineering</h3>
-            <p>Custom PHP ingestion services land borough-level extracts into PostgreSQL, where GeoJSON geometry enables spatial joins.</p>
-          </div>
-          <div class="tech-card" role="listitem">
-            <h3>Visualization</h3>
-            <p>D3.js patterns inspire the interactions, while this static build leans on Chart.js and bespoke canvas heatmaps for offline parity.</p>
-          </div>
-          <div class="tech-card" role="listitem">
-            <h3>Sources</h3>
-            <p>NYC Open Data feeds for rent and environment, paired with ACS API income benchmarks to align affordability context.</p>
-          </div>
+      <!-- Added recruiter-first narrative runway so the analytical story reads like a case interview answer. -->
+      <section class="case-overview" id="case-overview" aria-labelledby="overview-title" data-nav-section>
+        <div class="section-heading">
+          <span class="eyebrow">Case narrative</span>
+          <h2 id="overview-title">From affordability anxiety to actionable levers</h2>
+          <p class="text-block">
+            NYC’s affordability headlines lacked a borough-level signal recruiters could trust. I reframed the prompt into a structured journey — clarify the business pain, test hypotheses with data, and deliver a point of view executives can act on.
+          </p>
+        </div>
+        <ol class="process-rail" aria-label="Problem to impact journey">
+          <li>
+            <h3>1 · Define the problem</h3>
+            <p>Interviewed housing policy notes and rental reports to scope the risk: mid-income renters were losing ground despite recovery.</p>
+          </li>
+          <li>
+            <h3>2 · Engineer trustworthy data</h3>
+            <p>Automated borough-level extracts, normalized rent + ACS income, and stitched transit/environment markers for context.</p>
+          </li>
+          <li>
+            <h3>3 · Model and pressure-test</h3>
+            <p>Ran YoY growth, regression, and correlation diagnostics to isolate which factors drove divergence.</p>
+          </li>
+          <li>
+            <h3>4 · Communicate the story</h3>
+            <p>Designed scrollytelling, narrative HUD, and downloadable evidence so non-technical reviewers stay oriented.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="executive-summary" aria-labelledby="summary-title" data-nav-section>
+        <div class="section-heading">
+          <span class="eyebrow">Executive summary</span>
+          <h2 id="summary-title">The three beats recruiters should know</h2>
+        </div>
+        <ul class="summary-list" role="list" aria-live="polite">
+          <li data-summary-item="0">Loading growth insight…</li>
+          <li data-summary-item="1">Loading spread insight…</li>
+          <li data-summary-item="2">Loading correlation insight…</li>
+        </ul>
+        <p class="summary-footnote">All statements refresh as you explore the filters below — demonstrating how I couple storytelling with responsive analytics.</p>
+      </section>
+
+      <section class="visual-summary" aria-labelledby="visual-summary-title" data-nav-section>
+        <div class="section-heading">
+          <span class="eyebrow">Visual shortcuts</span>
+          <h2 id="visual-summary-title">Jump to the insight you need</h2>
+          <p class="text-block">
+            Tap a card to open the relevant visualization, or stay in compact view to skim the narrative highlights. Recruiters see the whole story without endless scrolling.
+          </p>
+        </div>
+        <div class="visual-summary-grid" role="list">
+          <button type="button" class="visual-thumb" data-scroll-target="#rent-story" role="listitem">
+            <span class="visual-thumb-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                <rect x="6" y="12" width="6" height="14" rx="2" />
+                <rect x="18" y="6" width="6" height="20" rx="2" />
+                <rect x="30" y="2" width="6" height="24" rx="2" />
+              </svg>
+            </span>
+            <span class="visual-thumb-label">Median rent</span>
+            <span class="visual-thumb-meta">Leaderboard + scrollytelling</span>
+          </button>
+          <button type="button" class="visual-thumb" data-scroll-target="#rent-trajectories" role="listitem">
+            <span class="visual-thumb-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                <polyline points="4,26 16,18 28,12 40,6" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+            <span class="visual-thumb-label">Trajectories</span>
+            <span class="visual-thumb-meta">Rent vs. time</span>
+          </button>
+          <button type="button" class="visual-thumb" data-scroll-target="#income-rent" role="listitem">
+            <span class="visual-thumb-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                <circle cx="16" cy="18" r="6" />
+                <circle cx="32" cy="12" r="4" />
+                <circle cx="26" cy="24" r="5" />
+              </svg>
+            </span>
+            <span class="visual-thumb-label">Income vs. rent</span>
+            <span class="visual-thumb-meta">Transit-weighted bubbles</span>
+          </button>
+          <button type="button" class="visual-thumb" data-scroll-target="#heatmap-insights" role="listitem">
+            <span class="visual-thumb-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                <rect x="6" y="6" width="12" height="10" rx="1" />
+                <rect x="6" y="20" width="12" height="6" rx="1" />
+                <rect x="22" y="6" width="20" height="8" rx="1" />
+                <rect x="22" y="18" width="20" height="8" rx="1" />
+              </svg>
+            </span>
+            <span class="visual-thumb-label">Heatmap pulses</span>
+            <span class="visual-thumb-meta">Rent &amp; YoY growth</span>
+          </button>
         </div>
       </section>
 
-      <section aria-labelledby="filters-title">
-        <h2 id="filters-title">Dial in the view</h2>
+      <section aria-labelledby="filters-title" class="filters-section" id="filters" data-nav-section>
+        <div class="section-heading">
+          <span class="eyebrow">Control the lens</span>
+          <h2 id="filters-title">Dial in the view</h2>
+        </div>
         <p class="text-block">
           Use the controls to focus on the years, boroughs, and metrics that matter for your decision. All visuals and narratives update instantly, so the story follows your context.
         </p>
@@ -123,12 +263,14 @@
         </div>
       </section>
 
-      <section class="scrolly-container" aria-label="Rent story">
+      <section class="scrolly-container" aria-label="Rent story" id="rent-story" data-nav-section>
         <div class="scrolly-sticky" aria-hidden="true">
           <article class="chart-card" aria-label="Median rent per borough">
             <h4>Median rent leaderboard</h4>
             <p class="chart-summary" data-dynamic-narrative></p>
-            <canvas id="chart-bar" aria-label="Bar chart of median rent by borough"></canvas>
+            <div class="chart-frame">
+              <canvas id="chart-bar" aria-label="Bar chart of median rent by borough"></canvas>
+            </div>
             <div class="key-takeaway" data-takeaway="bar">Loading rent takeaway…</div>
           </article>
         </div>
@@ -166,50 +308,151 @@
         </div>
       </section>
 
-      <section aria-labelledby="trend-title">
+      <section aria-labelledby="trend-title" id="rent-trajectories" data-nav-section>
         <div class="chart-card">
           <h4 id="trend-title">Rent trajectories 2010–2024</h4>
           <p class="chart-summary">
             From 2010 to 2024, the median rent grew 32%, outpacing income by 11% citywide. Toggle boroughs to isolate the slope driving that divergence.
           </p>
-          <canvas id="chart-line"></canvas>
+          <div class="chart-frame">
+            <canvas id="chart-line"></canvas>
+          </div>
           <div class="key-takeaway" data-takeaway="line">Loading trajectory takeaway…</div>
         </div>
       </section>
 
-      <section aria-labelledby="scatter-title">
+      <section aria-labelledby="scatter-title" id="income-rent" data-nav-section>
         <div class="chart-card">
           <h4 id="scatter-title">Income vs rent positioning</h4>
           <p class="chart-summary">
             Bubble size represents subway access. Hover to see borough-year combinations and how transit and environment link to rent levels.
           </p>
-          <canvas id="chart-scatter"></canvas>
+          <div class="chart-frame">
+            <canvas id="chart-scatter"></canvas>
+          </div>
           <div class="key-takeaway" data-takeaway="scatter">Loading correlation takeaway…</div>
         </div>
       </section>
 
-      <section aria-labelledby="heatmap-title">
+      <section aria-labelledby="heatmap-title" id="heatmap-insights" data-nav-section>
         <div class="chart-card">
           <h4 id="heatmap-title">Heatmap: rent and growth pulses</h4>
           <p class="chart-summary">
             Switch between median rent and year-over-year change to see when each borough accelerates or pauses.
           </p>
-          <canvas id="chart-heatmap" width="900" height="420" class="heatmap" role="img" aria-label="Heatmap of rent dynamics"></canvas>
+          <div class="chart-frame">
+            <canvas id="chart-heatmap" class="heatmap" role="img" aria-label="Heatmap of rent dynamics"></canvas>
+          </div>
           <div class="key-takeaway" data-takeaway="heatmap">Loading heatmap takeaway…</div>
         </div>
       </section>
 
-      <section aria-labelledby="derived-title" class="derived-insights">
+      <section aria-labelledby="derived-title" class="derived-insights" data-nav-section>
         <h2 id="derived-title">Derived Insights</h2>
         <p data-derived="transit">Loading transit insight…</p>
         <p data-derived="regression">Loading regression insight…</p>
         <p class="text-xs text-slate-400">Caveat: Model outputs reference replicated medians; localized submarkets may diverge.</p>
       </section>
+ 
+      <section class="project-dossier" id="project-dossier" aria-labelledby="project-dossier-title" data-nav-section>
+        <div class="section-heading">
+          <span class="eyebrow">Project dossier</span>
+          <h2 id="project-dossier-title">Key outcomes, stack, and next bets</h2>
+          <p class="text-block">
+            Keep the high-level wins collapsed for a skim, or expand each panel for deeper context. It keeps the story compact while preserving due-diligence detail for hiring teams.
+          </p>
+        </div>
+        <details class="dossier-panel" open id="dossier-impact">
+          <summary><span>Impact &amp; scope</span></summary>
+          <div class="impact-grid" role="list">
+            <article class="impact-card" role="listitem">
+              <h3>Analytical wins</h3>
+              <p>Surfaced a borough rent spread widening by $1,150 since 2010 and quantified transit as explaining 38% of variance.</p>
+              <ul>
+                <li>Time-series rent vs. income benchmarking</li>
+                <li>Correlation + regression diagnostics</li>
+                <li>Interactive HUD for rapid scenario testing</li>
+              </ul>
+            </article>
+            <article class="impact-card" role="listitem">
+              <h3>Engineering lift</h3>
+              <p>Codified an ETL-to-visualization pipeline with automated CSV syncs, semantic JSON summaries, and static deploy scripts.</p>
+              <ul>
+                <li>Reusable PHP ingestion jobs</li>
+                <li>PostgreSQL spatial joins and QA</li>
+                <li>Accessible, responsive chart system</li>
+              </ul>
+            </article>
+            <article class="impact-card" role="listitem">
+              <h3>Business relevance</h3>
+              <p>Equips talent teams with a portfolio that reads like a client deliverable — evidence, explanation, and reflection packaged together.</p>
+              <ul>
+                <li>Case-study narrative &amp; recruiter brief</li>
+                <li>Download-ready data for due diligence</li>
+                <li>Actionable recommendations per borough</li>
+              </ul>
+            </article>
+          </div>
+        </details>
+        <details class="dossier-panel" id="dossier-tech">
+          <summary><span>Tech &amp; data stack</span></summary>
+          <div class="tech-bubble">
+            <p class="text-block">
+              Built with a PHP ETL backend, PostgreSQL + GeoJSON spatial layers, and D3.js inspiration rendered through Chart.js and bespoke canvas heatmaps for a performant static experience.
+            </p>
+            <div class="tech-grid" role="list">
+              <div class="tech-card" role="listitem">
+                <h3>Engineering</h3>
+                <p>Custom PHP ingestion services land borough-level extracts into PostgreSQL, where GeoJSON geometry enables spatial joins.</p>
+              </div>
+              <div class="tech-card" role="listitem">
+                <h3>Visualization</h3>
+                <p>D3.js patterns inform the interactions, while this static build leans on Chart.js and bespoke canvas heatmaps for offline parity.</p>
+              </div>
+              <div class="tech-card" role="listitem">
+                <h3>Sources</h3>
+                <p>NYC Open Data feeds for rent and environment, paired with ACS API income benchmarks to align affordability context.</p>
+              </div>
+            </div>
+          </div>
+        </details>
+        <details class="dossier-panel" id="dossier-reflection">
+          <summary><span>Reflection &amp; next steps</span></summary>
+          <div class="reflection">
+            <div class="section-heading">
+              <p class="text-block">
+                With more time I would integrate leasing velocity and building permits to strengthen lead indicators, expose the ETL notebooks for code review, and package borough briefs as PDF exports. The current build already demonstrates how I reason, validate, and communicate under real-world constraints.
+              </p>
+            </div>
+            <div class="reflection-grid">
+              <article>
+                <h3>Next experiment</h3>
+                <p>Prototype a predictive lead score that flags affordability stress six months ahead using permit and transit disruption feeds.</p>
+              </article>
+              <article>
+                <h3>Team integration</h3>
+                <p>Hook this narrative into a design system so stakeholders can reuse the scrollytelling template for other asset classes.</p>
+              </article>
+              <article>
+                <h3>Recruiter takeaway</h3>
+                <p>You get a candidate who can brief leadership, own the stack, and ship polished artefacts without extra design support.</p>
+              </article>
+            </div>
+          </div>
+        </details>
+      </section>
     </main>
 
     <footer>
-      <p>Crafted by Jordan Chen — <a href="https://github.com/jordanchen" target="_blank" rel="noopener">GitHub</a> · <a href="https://www.linkedin.com/in/jordanchenanalytics/" target="_blank" rel="noopener">LinkedIn</a></p>
-      <p>InsightLab is a full-stack, data-driven storytelling platform built to explore NYC housing over 14 years — showcasing end-to-end data engineering, statistical modeling, and interactive visualization.</p>
+      <p>
+        Crafted by Jordan Chen —
+        <a href="https://github.com/jordanchen" target="_blank" rel="noopener">GitHub</a>
+        ·
+        <a href="https://www.linkedin.com/in/jordanchenanalytics/" target="_blank" rel="noopener">LinkedIn</a>
+      </p>
+      <p>
+        InsightLab is a full-stack, data-driven storytelling platform built to explore NYC housing over 14 years — showcasing end-to-end data engineering, statistical modeling, and interactive visualization.
+      </p>
       <p>Data replicated from NYC Open Data &amp; ACS; see README for citations. Hero treatment uses CSS gradients for offline performance.</p>
     </footer>
   </body>
