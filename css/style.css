@@ -124,6 +124,38 @@ a:not(.btn-primary):not(.btn-secondary):not(.skip-link):focus-visible::after {
   font-weight: 600;
 }
 
+/* Recruiter-focused layout scaffolding for the refreshed hero and narrative runway. */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 200;
+  background: var(--accent);
+  color: #0f172a;
+  padding: 0.75rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  width: auto;
+  height: auto;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+
 a:hover,
 a:focus {
   color: var(--accent-strong);
