@@ -9,7 +9,7 @@ import {
   heatmapData,
   calculateMetricGrowth
 } from './analysis.js';
-import { initBarChart, initLineChart, initScatterChart, initHeatmap, refreshThemes } from './charts.js';
+import { initBarChart, initLineMultiples, initScatterChart, updateScatterChart, initHeatmap, refreshThemes } from './charts.js';
 
 const state = {
   records: [],
@@ -17,10 +17,11 @@ const state = {
   viz: null,
   charts: {
     bar: null,
-    line: null,
+    multiples: [],
     scatter: null,
     heatmap: null
-  }
+  },
+  scatterRanges: null
 };
 
 const counterOptions = { duration: 1600 };
@@ -57,6 +58,7 @@ async function bootstrap() {
 
   updateHero(state.summary);
   updateContext(state.summary);
+  updateKpis(state.records, state.summary);
   renderCharts(state.records, state.summary, state.viz);
   renderCaptions(state.records, state.summary, state.viz);
   renderFindings(state.records, state.summary);
@@ -119,17 +121,56 @@ function renderCharts(records, summary, vizPayload) {
   const boroughs = vizPayload?.boroughs ?? uniqueBoroughs(records);
   const years = vizPayload?.years ?? uniqueYears(records);
   const barCanvas = document.getElementById('chart-bar');
-  const lineCanvas = document.getElementById('chart-line');
+  const multiplesContainer = document.querySelector('[data-chart-multiples]');
   const scatterCanvas = document.getElementById('chart-scatter');
   const heatmapCanvas = document.getElementById('chart-heatmap');
 
   if (barCanvas) state.charts.bar = initBarChart(barCanvas, latestRows, latestYear);
-  if (lineCanvas) state.charts.line = initLineChart(lineCanvas, records, years, boroughs);
-  if (scatterCanvas) state.charts.scatter = initScatterChart(scatterCanvas, compileScatter(records, boroughs));
+  if (multiplesContainer) state.charts.multiples = initLineMultiples(multiplesContainer, records, years, boroughs);
+  if (scatterCanvas) initScatterWithTabs(scatterCanvas, records, boroughs, years);
   if (heatmapCanvas) {
     const dataset = vizPayload?.heatmap ?? prepareHeatmapDataset(heatmapData(records, 'rent_growth', summary.yoy));
     state.charts.heatmap = initHeatmap(heatmapCanvas, dataset);
   }
+}
+
+function initScatterWithTabs(canvas, records, boroughs, years) {
+  const points = compileScatter(records, boroughs);
+  const startYear = Math.min(...years);
+  const splitYear = 2016;
+  const endYear = Math.max(...years);
+  const ranges = {
+    '2010-2016': { min: startYear, max: Math.min(splitYear, endYear) },
+    '2017-2024': { min: Math.min(splitYear + 1, endYear), max: endYear }
+  };
+  state.scatterRanges = ranges;
+  const defaultKey = Object.keys(ranges)[0];
+  const initialPoints = filterScatter(points, ranges[defaultKey]);
+  state.charts.scatter = initScatterChart(canvas, initialPoints);
+
+  const tabs = document.querySelectorAll('[data-period-tab]');
+  tabs.forEach((tab, index) => {
+    if (!tab.dataset.periodTab) return;
+    tab.setAttribute('tabindex', index === 0 ? '0' : '-1');
+    tab.addEventListener('click', () => {
+      const key = tab.dataset.periodTab;
+      if (!key || !ranges[key]) return;
+      tabs.forEach((other) => {
+        const isActive = other === tab;
+        other.classList.toggle('is-active', isActive);
+        other.setAttribute('aria-selected', String(isActive));
+        other.setAttribute('tabindex', isActive ? '0' : '-1');
+      });
+      const filtered = filterScatter(points, ranges[key]);
+      updateScatterChart(state.charts.scatter, filtered);
+    });
+  });
+}
+
+function filterScatter(points, range) {
+  if (!range) return points;
+  if (range.max < range.min) return points;
+  return points.filter((point) => point.year >= range.min && point.year <= range.max);
 }
 
 
@@ -174,10 +215,10 @@ function renderCaptions(records, summary, vizPayload) {
   if (latestRows.length) {
     const top = latestRows[0];
     const bottom = latestRows[latestRows.length - 1];
-    setText('[data-caption="rent-latest"]', `${top.borough} leads 2024 at ${formatCurrency(top.median_rent)}, while ${bottom.borough} sits at ${formatCurrency(bottom.median_rent)}.`);
+    const spread = top.median_rent - bottom.median_rent;
     setText(
-      '[data-interpretation="rent-latest"]',
-      `The resulting $${(top.median_rent - bottom.median_rent).toLocaleString()} spread keeps higher-income boroughs out of reach for households anchored in the Bronx and Queens.`
+      '[data-takeaway="rent-latest"]',
+      `Takeaway: ${top.borough} tops ${summary.latestYear} at ${formatCurrency(top.median_rent)}, while ${bottom.borough} remains lowest, leaving a ${spread.toLocaleString('en-US', { maximumFractionDigits: 0 })} dollar gap. · Source: NYC Open Data. · Period: ${summary.latestYear}.`
     );
   }
 
@@ -186,13 +227,13 @@ function renderCaptions(records, summary, vizPayload) {
   if (growthValues.length) {
     const minGrowth = Math.min(...growthValues.map((g) => g.pct));
     const maxGrowth = Math.max(...growthValues.map((g) => g.pct));
+    const topBorough = Object.keys(growth).reduce((best, borough) => {
+      if (!best) return borough;
+      return (growth[borough]?.pct ?? 0) > (growth[best]?.pct ?? 0) ? borough : best;
+    }, null);
     setText(
-      '[data-caption="rent-trajectories"]',
-      `Borough rents climbed between ${minGrowth.toFixed(1)}% and ${maxGrowth.toFixed(1)}% from 2010 to 2024.`
-    );
-    setText(
-      '[data-interpretation="rent-trajectories"]',
-      'Brooklyn and Queens show the steepest post-2012 slope, signaling where affordability stress accelerated the most.'
+      '[data-takeaway="rent-trajectories"]',
+      `Takeaway: Borough rents climbed between ${minGrowth.toFixed(1)}% and ${maxGrowth.toFixed(1)}%, with ${(topBorough ?? 'Brooklyn')} bending upward fastest after 2012. · Source: NYC Open Data. · Period: 2010–2024.`
     );
   }
 
@@ -200,14 +241,8 @@ function renderCaptions(records, summary, vizPayload) {
   const transitCorrelation = summary.correlations?.rent_subway;
   if (Number.isFinite(incomeCorrelation) && Number.isFinite(transitCorrelation)) {
     setText(
-      '[data-caption="rent-transit"]',
-      `Across ${state.records.length} borough-year observations, rent tracks income closely (r = ${incomeCorrelation.toFixed(
-        2
-      )}) while transit access still shows a material relationship (r = ${transitCorrelation.toFixed(2)}).`
-    );
-    setText(
-      '[data-interpretation="rent-transit"]',
-      'Higher subway access pushes rents above income-only expectations, clustering Manhattan and Brooklyn in the top-right corner.'
+      '[data-takeaway="rent-transit"]',
+      `Takeaway: Rent tracks income (r = ${incomeCorrelation.toFixed(2)}) yet high-transit borough-years sit above the trend, tightening budgets. · Source: ACS + MTA + NYC Open Data. · Period: 2010–2024.`
     );
   }
 
@@ -216,14 +251,43 @@ function renderCaptions(records, summary, vizPayload) {
   if (pctValues.length) {
     const maxYoY = Math.max(...pctValues);
     setText(
-      '[data-caption="rent-heatmap"]',
-      `Year-over-year rent change peaks around ${maxYoY.toFixed(1)}%, with a second surge during the 2021 recovery.`
-    );
-    setText(
-      '[data-interpretation="rent-heatmap"]',
-      `Those pulses confirm that the post-pandemic rebound nearly matched the early-2010s spike, especially in the Bronx and Brooklyn.`
+      '[data-takeaway="rent-heatmap"]',
+      `Takeaway: Year-over-year rent change peaked near ${maxYoY.toFixed(1)}%, with matching surges around 2013 and 2021. · Source: NYC Open Data. · Period: 2011–2024.`
     );
   }
+}
+
+function updateKpis(records, summary) {
+  const years = uniqueYears(records);
+  if (!years.length) return;
+  const startYear = years[0];
+  const endYear = years[years.length - 1];
+  const startRows = filterRecords(records, { year: startYear });
+  const endRows = filterRecords(records, { year: endYear });
+  if (startRows.length && endRows.length) {
+    const startAverage = average(startRows.map((row) => row.median_rent));
+    const endAverage = average(endRows.map((row) => row.median_rent));
+    const rentDelta = endAverage - startAverage;
+    const rentPrefix = rentDelta >= 0 ? '+' : '−';
+    setText('[data-kpi="rent-delta"]', `${rentPrefix}${formatCurrency(Math.abs(rentDelta))}`);
+  }
+
+  const wageStartYear = Math.max(2015, startYear);
+  const startIncomeRows = filterRecords(records, { year: wageStartYear });
+  const endIncomeRows = filterRecords(records, { year: endYear });
+  if (startIncomeRows.length && endIncomeRows.length) {
+    const startGap = average(startIncomeRows.map((row) => row.median_income / 12 - row.median_rent));
+    const endGap = average(endIncomeRows.map((row) => row.median_income / 12 - row.median_rent));
+    const gapDelta = endGap - startGap;
+    const gapPrefix = gapDelta >= 0 ? '+' : '−';
+    setText('[data-kpi="wage-gap"]', `${gapPrefix}${formatCurrency(Math.abs(gapDelta))}`);
+  }
+}
+
+function average(values) {
+  if (!values.length) return 0;
+  const total = values.reduce((sum, value) => sum + Number(value || 0), 0);
+  return total / values.length;
 }
 
 function renderFindings(records, summary) {
