@@ -2,18 +2,22 @@
 
 // Import enhancement modules
 import { initInsightCards } from './insightCards.js';
-import { initTransparencyToggle } from './transparency.js';
 import { addChartAnimations, observeChartAnimations } from './chartAnimations.js';
-import { initPandemicToggle } from './pandemicToggle.js';
 import { initShareableInsights } from './shareableInsights.js';
 
 // =============================================================================
 // CONSTANTS & STATE
 // =============================================================================
 
+const SCATTER_PERIODS = [
+  { key: '2010-2013', start: 2010, end: 2013 },
+  { key: '2014-2016', start: 2014, end: 2016 },
+  { key: '2017-2020', start: 2017, end: 2020 },
+  { key: '2021-2024', start: 2021, end: 2024 },
+];
+
 const STATE = {
   theme: localStorage.getItem('theme') || 'dark',
-  density: localStorage.getItem('density') || 'compact',
   chartInstances: new Map(),
   data: null,
   summary: null,
@@ -63,10 +67,10 @@ const loadData = async () => {
     };
 
     const scatterPoints = vizPayload.scatter ?? [];
-    const scatterData = {
-      '2010-2016': [],
-      '2017-2024': [],
-    };
+    const scatterData = {};
+    SCATTER_PERIODS.forEach(({ key }) => {
+      scatterData[key] = [];
+    });
 
     scatterPoints.forEach((point) => {
       if (!point || typeof point.year !== 'number') return;
@@ -78,10 +82,9 @@ const loadData = async () => {
         borough: point.borough,
         year: point.year,
       };
-      if (point.year <= 2016) {
-        scatterData['2010-2016'].push(enriched);
-      } else {
-        scatterData['2017-2024'].push(enriched);
+      const period = SCATTER_PERIODS.find((range) => point.year >= range.start && point.year <= range.end);
+      if (period) {
+        scatterData[period.key].push(enriched);
       }
     });
 
@@ -168,7 +171,7 @@ const formatDifference = (value, suffix = '') => {
 };
 
 // =============================================================================
-// THEME & DENSITY MANAGEMENT
+// THEME MANAGEMENT
 // =============================================================================
 
 const initTheme = () => {
@@ -194,29 +197,6 @@ const initTheme = () => {
   });
 
   applyTheme(STATE.theme);
-};
-
-const initDensity = () => {
-  const toggle = document.querySelector('[data-density-toggle]');
-  const body = document.body;
-
-  const applyDensity = (density) => {
-    body.classList.toggle('compact-mode', density === 'compact');
-    toggle?.setAttribute('aria-pressed', density === 'compact');
-    const label = toggle?.querySelector('.density-label');
-    if (label) {
-      label.textContent = density === 'compact' ? 'Compact' : 'Comfortable';
-    }
-    localStorage.setItem('density', density);
-    STATE.density = density;
-  };
-
-  toggle?.addEventListener('click', () => {
-    const newDensity = STATE.density === 'compact' ? 'comfortable' : 'compact';
-    applyDensity(newDensity);
-  });
-
-  applyDensity(STATE.density);
 };
 
 // =============================================================================
@@ -421,7 +401,7 @@ const createSmallMultiples = (data) => {
   });
 };
 
-const createScatterChart = (data, period = '2010-2016') => {
+const createScatterChart = (data, period = SCATTER_PERIODS[0].key) => {
   const canvas = document.getElementById('chart-scatter');
   if (!canvas) return;
 
@@ -626,7 +606,8 @@ const refreshAllCharts = () => {
     if (STATE.data) {
       createBarChart(STATE.data.rentData);
       createSmallMultiples(STATE.data.rentData);
-      const activePeriod = document.querySelector('[data-period-tab].is-active')?.getAttribute('data-period-tab') || '2010-2016';
+      const activePeriod =
+        document.querySelector('[data-period-tab].is-active')?.getAttribute('data-period-tab') || SCATTER_PERIODS[0].key;
       createScatterChart(STATE.data.scatterData, activePeriod);
       createHeatmapChart(STATE.data.heatmapData);
     }
@@ -817,14 +798,11 @@ const initErrorHandling = () => {
 const init = async () => {
   try {
     initTheme();
-    initDensity();
     initScrollProgress();
     initScrollAnimations();
     initSmoothScroll();
     initKeyboardNav();
     initKPIs();
-    initTransparencyToggle();
-    initPandemicToggle();
     initErrorHandling();
 
     await loadData();
@@ -834,7 +812,7 @@ const init = async () => {
         if (STATE.data) {
           createBarChart(STATE.data.rentData);
           createSmallMultiples(STATE.data.rentData);
-          createScatterChart(STATE.data.scatterData);
+          createScatterChart(STATE.data.scatterData, SCATTER_PERIODS[0].key);
           createHeatmapChart(STATE.data.heatmapData);
           
           // Initialize insight cards, chart animations, and share buttons after charts are rendered

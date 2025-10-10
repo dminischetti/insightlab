@@ -10,7 +10,7 @@ This document describes the interactive storytelling enhancements added to Insig
 **What changed:** Re-centered the landing experience around a flexible toolbar and a dedicated metrics panel.
 
 **User Experience:**
-- Theme, density, and pandemic controls sit beside the introduction for immediate context
+- Theme control sits beside the introduction for immediate context
 - Desktop view uses a two-column grid that keeps the narrative and metrics balanced
 - Mobile view turns the toolbar into thumb-friendly buttons stacked within the hero
 
@@ -38,10 +38,10 @@ This document describes the interactive storytelling enhancements added to Insig
 - Mobile-responsive (converts to inline cards)
 
 ### 3. 🧠 Data Transparency Layer
-**What it does:** Collapsible "How I Built This" section showcasing technical depth.
+**What it does:** Keeps the "How I Built This" section fully expanded to spotlight technical depth without extra clicks.
 
 **User Experience:**
-- Expandable section with brain emoji (🧠) at page bottom
+- Persistent section with brain emoji (🧠) at page bottom
 - 4-card grid layout covering:
   - 📦 Data Sources (5 public datasets)
   - ⚙️ Tech Stack (Python, DuckDB, Chart.js, Vanilla JS)
@@ -50,25 +50,21 @@ This document describes the interactive storytelling enhancements added to Insig
 - Professional yet personal tone
 
 **Technical Implementation:**
-- Module: `js/transparency.js`
-- Smooth expand/collapse with CSS transitions
-- Accessible toggle button with aria-expanded
 - Grid layout adapts to mobile
+- Section is always visible; toggle script retired
 
-### 4. 🔄 Pandemic Comparison Toggle
-**What it does:** Allows comparison of pre/post-2020 housing dynamics.
+### 4. 🗓️ Expanded Time Slices
+**What it does:** Adds four distinct date-range selections to the income vs. rent scatter plot for richer comparisons.
 
 **User Experience:**
-- "Compare 2020" toggle button in header controls
-- Animated notification: "🔄 Pandemic Reset in Motion"
-- Visual indicator when active (gradient background)
-- Easy switch back to full timeline
+- Tabs for 2010–2013, 2014–2016, 2017–2020, and 2021–2024
+- Quick switching between pre- and post-pandemic eras without extra UI clutter
+- Clear focus states and keyboard support
 
 **Technical Implementation:**
-- Module: `js/pandemicToggle.js`
-- Dispatches custom events for chart updates
-- Applies pandemic-specific color scheme
-- Maintains state across interactions
+- Centralized `SCATTER_PERIODS` configuration in `js/main.js`
+- Data bucketing handled during payload hydration
+- Chart redraw respects the active tab
 
 ### 5. ✨ Micro Animations
 **What it does:** Adds polish through consistent, purposeful motion.
@@ -155,8 +151,7 @@ This document describes the interactive storytelling enhancements added to Insig
 
 **New Files Added:**
 - `js/insightCards.js` - Personal insight overlays
-- `js/transparency.js` - Collapsible transparency section
-- `js/pandemicToggle.js` - Before/after 2020 comparison
+- `js/transparency.js` - Transparency section behavior (now static)
 - `js/chartAnimations.js` - Chart animation system
 - `js/enhancedTooltips.js` - Rich tooltip system
 - `js/shareableInsights.js` - Image export feature
@@ -196,10 +191,10 @@ This document describes the interactive storytelling enhancements added to Insig
 
 ### Try It Out
 
-1. **Use the hero controls** - Toggle theme, density, and pandemic comparison from the landing section
+1. **Use the hero controls** - Toggle between light and dark theme from the landing section
 2. **Scroll through visualizations** - Watch for insight cards appearing
-3. **Click "How I Built This"** - See technical transparency
-4. **Toggle "Compare 2020"** - Explore pandemic comparison
+3. **Review "How I Built This"** - Technical transparency stays visible
+4. **Switch scatter tabs** - Compare borough dynamics across four eras
 5. **Hover over charts** - Find the share button to export visuals
 
 ## Maintenance Notes
@@ -212,7 +207,7 @@ This document describes the interactive storytelling enhancements added to Insig
 
 **Future Enhancements:**
 - Preset hero control combinations (e.g., "Light + Spacious" quick switch)
-- More granular pandemic comparison controls
+- Predictive overlays for future housing scenarios
 - Interactive "what-if" scenario modeling
 - A/B testing framework for storytelling approaches
 
