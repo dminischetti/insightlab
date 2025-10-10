@@ -343,21 +343,38 @@
       radial-gradient(ellipse 60% 40% at 50% 100%, oklch(68% 0.15 270 / 0.12), transparent 50%);
   }
 
-  .hero-controls {
-    position: absolute;
-    inset-block-start: calc(1.5rem + var(--safe-top));
-    inset-inline-end: calc(1.5rem + var(--safe-right));
+  .hero-header {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-header .step-chip {
+    margin-block-end: 0;
+  }
+
+  .hero-controls {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
     gap: 0.75rem;
-    z-index: 10;
+    flex-wrap: wrap;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-overlay);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    backdrop-filter: blur(12px) saturate(160%);
+    box-shadow: var(--shadow-sm);
   }
 
   .theme-toggle,
   .density-toggle,
   .pandemic-toggle {
-    min-block-size: 2.75rem;
-    min-inline-size: 2.75rem;
-    padding: 0.625rem 1rem;
+    min-block-size: 2.5rem;
+    min-inline-size: 2.5rem;
+    padding: 0.5rem 0.9rem;
     background: var(--bg-overlay);
     backdrop-filter: blur(12px) saturate(180%);
     border: 1px solid var(--border-subtle);
@@ -411,6 +428,22 @@
   .density-label {
     font-size: 0.9rem;
     font-weight: 500;
+  }
+
+  .hero-layout {
+    display: grid;
+    gap: clamp(1.75rem, 4vw, 3rem);
+  }
+
+  .hero-main {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .hero-aside {
+    display: grid;
+    gap: 1.25rem;
+    align-content: start;
   }
 
   .content-container {
@@ -482,11 +515,64 @@
     font-variant-numeric: tabular-nums;
   }
 
+  .hero-aside {
+    padding: clamp(1.5rem, 3vw, 2rem);
+    background: var(--bg-overlay);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+  }
+
+  .hero-aside .hero-metric {
+    inline-size: 100%;
+    max-inline-size: none;
+  }
+
+  .hero-aside .kpi-group {
+    width: 100%;
+  }
+
+  .hero-aside .kpi-chip {
+    flex: 1 1 calc(50% - 0.75rem);
+    justify-content: space-between;
+  }
+
+  @media (width >= 62rem) {
+    .hero-layout {
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 0.95fr);
+    }
+  }
+
+  @media (width <= 48rem) {
+    .hero-controls {
+      width: 100%;
+      justify-content: space-between;
+      padding: 0.5rem 0.625rem;
+    }
+
+    .hero-controls .pandemic-toggle,
+    .hero-controls .density-toggle {
+      flex: 1 1 45%;
+    }
+
+    .hero-controls .theme-toggle {
+      flex: 0 0 auto;
+    }
+
+    .hero-aside {
+      padding: 1.25rem;
+    }
+
+    .hero-aside .kpi-chip {
+      flex: 1 1 100%;
+    }
+  }
+
   .kpi-group {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
-    margin-block: 0.5rem 1.5rem;
+    margin-block: 0;
   }
 
   .kpi-chip {
@@ -1053,63 +1139,6 @@
   .study-section {
     page-break-inside: avoid;
     break-inside: avoid;
-  }
-
-  /* =============================================================================
-   * GUIDED TOUR BUTTON - Floating CTA for auto-scroll storytelling
-   * ============================================================================= */
-  .tour-button {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    z-index: 999;
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-    padding: 0.875rem 1.5rem;
-    background: var(--accent-gradient);
-    color: white;
-    border: none;
-    border-radius: var(--radius-full);
-    font-weight: 600;
-    font-size: 0.9375rem;
-    box-shadow: var(--shadow-xl);
-    cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    backdrop-filter: blur(12px);
-  }
-
-  .tour-button:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 24px 32px -8px oklch(0% 0 0 / 0.25);
-  }
-
-  .tour-button:focus-visible {
-    outline: none;
-    box-shadow: var(--focus-ring-offset), var(--shadow-xl);
-  }
-
-  .tour-button svg {
-    flex-shrink: 0;
-  }
-
-  @media (width <= 48rem) {
-    .tour-button {
-      bottom: 1.5rem;
-      right: 1.5rem;
-      padding: 0.75rem 1.25rem;
-      font-size: 0.875rem;
-    }
-  }
-
-  /* Tour caption overlay */
-  .tour-caption {
-    animation: tourCaptionPulse 0.4s ease;
-  }
-
-  @keyframes tourCaptionPulse {
-    0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
-    100% { opacity: 1; transform: translateX(-50%) translateY(0); }
   }
 
   /* =============================================================================

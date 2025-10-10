@@ -41,81 +41,81 @@
     <div id="progress-bar" aria-hidden="true"></div>
     <a class="skip-link" href="#main">Skip to main content</a>
 
-    <!-- Guided Tour Button -->
-    <button class="tour-button" data-tour-button aria-label="Take a 60-second guided tour" type="button">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M5 3L12 8L5 13V3Z" fill="currentColor"/>
-      </svg>
-      <span>Take a Tour</span>
-    </button>
-
     <header class="hero" role="banner">
       <div class="hero-overlay" aria-hidden="true"></div>
-      <div class="hero-controls">
-        <button class="theme-toggle" data-theme-toggle aria-label="Toggle color theme" type="button">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path class="sun-icon" d="M10 3V1M10 19V17M17 10H19M1 10H3M15.657 4.343L17.071 2.929M2.929 17.071L4.343 15.657M15.657 15.657L17.071 17.071M2.929 2.929L4.343 4.343M14 10C14 12.209 12.209 14 10 14C7.791 14 6 12.209 6 10C6 7.791 7.791 6 10 6C12.209 6 14 7.791 14 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path class="moon-icon" d="M17 10C17 13.866 13.866 17 10 17C6.134 17 3 13.866 3 10C3 6.134 6.134 3 10 3C10.395 3 10.784 3.031 11.164 3.089C9.889 4.187 9.1 5.843 9.1 7.7C9.1 10.841 11.559 13.4 14.7 13.4C15.668 13.4 16.583 13.166 17.395 12.753C17.133 11.551 17 10.294 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <button class="pandemic-toggle" data-pandemic-toggle aria-pressed="false" aria-label="Switch to pandemic comparison view" type="button">
-          Compare 2020
-        </button>
-        <button class="density-toggle" data-density-toggle aria-pressed="true" type="button">
-          <span class="density-label">Compact</span>
-        </button>
-      </div>
       <div class="content-container hero-content" data-animate>
-        <span class="step-chip" aria-hidden="true">1</span>
-        <p class="eyebrow">Independent Research</p>
-        <h1>NYC Housing Dynamics<br><span class="title-period">(2010–2024)</span></h1>
-        <p class="hero-subtitle">A data-driven exploration of how rents and wages moved in tandem — or didn't.</p>
-        <p class="hero-narrative">
-          New York is my family's home and my testing ground for honest analysis. As a backend engineer and data analyst, I wanted to move past headlines and measure how rents, wages, and neighborhood change actually moved together from 2010 to 2024. Using public NYC sources (housing, permits/rezonings), BLS wages, and ACS, I built a reproducible pipeline to clean, join, and quality-check the data. The goal is decision-ready insight: which areas saw affordability pressure rise fastest, when the curve changed direction, and which signals a renter, planner, or team should watch next.
-        </p>
-        <div class="hero-metric" data-animate>
-          <span class="metric-label">Borough rent spread since 2010</span>
-          <span class="metric-value" data-counter-value>+$0</span>
-        </div>
-        <div class="kpi-group" role="list" aria-label="Key performance indicators">
-          <div class="kpi-chip" role="listitem">
-            <span class="kpi-label">Median rent Δ:</span>
-            <span class="kpi-value" data-kpi="rent-delta">—</span>
-            <span class="kpi-divider" aria-hidden="true">·</span>
-            <span class="kpi-period">2010–2024</span>
-          </div>
-          <div class="kpi-chip" role="listitem">
-            <span class="kpi-label">Wage–rent gap:</span>
-            <span class="kpi-value" data-kpi="wage-gap">—</span>
-            <span class="kpi-divider" aria-hidden="true">·</span>
-            <span class="kpi-period">2015–2024</span>
-          </div>
-          <div class="kpi-chip" role="listitem">
-            <span class="kpi-label">Volatility hotspots:</span>
-            <span class="kpi-value" data-kpi="volatility-hotspots">—</span>
-            <span class="kpi-divider" aria-hidden="true">·</span>
-            <span class="kpi-period">2010–2024</span>
+        <div class="hero-header">
+          <span class="step-chip" aria-hidden="true">1</span>
+          <div class="hero-controls" role="group" aria-label="Display settings">
+            <button class="theme-toggle" data-theme-toggle aria-label="Toggle color theme" type="button">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path class="sun-icon" d="M10 3V1M10 19V17M17 10H19M1 10H3M15.657 4.343L17.071 2.929M2.929 17.071L4.343 15.657M15.657 15.657L17.071 17.071M2.929 2.929L4.343 4.343M14 10C14 12.209 12.209 14 10 14C7.791 14 6 12.209 6 10C6 7.791 7.791 6 10 6C12.209 6 14 7.791 14 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path class="moon-icon" d="M17 10C17 13.866 13.866 17 10 17C6.134 17 3 13.866 3 10C3 6.134 6.134 3 10 3C10.395 3 10.784 3.031 11.164 3.089C9.889 4.187 9.1 5.843 9.1 7.7C9.1 10.841 11.559 13.4 14.7 13.4C15.668 13.4 16.583 13.166 17.395 12.753C17.133 11.551 17 10.294 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <button class="pandemic-toggle" data-pandemic-toggle aria-pressed="false" aria-label="Switch to pandemic comparison view" type="button">
+              Compare 2020
+            </button>
+            <button class="density-toggle" data-density-toggle aria-pressed="true" type="button">
+              <span class="density-label">Compact</span>
+            </button>
           </div>
         </div>
-        <div class="hero-cta-row" role="group" aria-label="Primary actions">
-          <a class="hero-cta hero-cta-primary" href="#insights" data-primary-cta>
-            <span>View Insights</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-          <a
-            class="hero-cta hero-cta-secondary"
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            data-secondary-cta
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-            </svg>
-            <span>View Repo</span>
-          </a>
+        <div class="hero-layout">
+          <div class="hero-main">
+            <p class="eyebrow">Independent Research</p>
+            <h1>NYC Housing Dynamics<br><span class="title-period">(2010–2024)</span></h1>
+            <p class="hero-subtitle">A data-driven exploration of how rents and wages moved in tandem — or didn't.</p>
+            <p class="hero-narrative">
+              New York is my family's home and my testing ground for honest analysis. As a backend engineer and data analyst, I wanted to move past headlines and measure how rents, wages, and neighborhood change actually moved together from 2010 to 2024. Using public NYC sources (housing, permits/rezonings), BLS wages, and ACS, I built a reproducible pipeline to clean, join, and quality-check the data. The goal is decision-ready insight: which areas saw affordability pressure rise fastest, when the curve changed direction, and which signals a renter, planner, or team should watch next.
+            </p>
+            <div class="hero-cta-row" role="group" aria-label="Primary actions">
+              <a class="hero-cta hero-cta-primary" href="#insights" data-primary-cta>
+                <span>View Insights</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+              <a
+                class="hero-cta hero-cta-secondary"
+                href="https://github.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-secondary-cta
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                <span>View Repo</span>
+              </a>
+            </div>
+          </div>
+          <aside class="hero-aside" aria-label="Key metrics">
+            <div class="hero-metric" data-animate>
+              <span class="metric-label">Borough rent spread since 2010</span>
+              <span class="metric-value" data-counter-value>+$0</span>
+            </div>
+            <div class="kpi-group" role="list" aria-label="Key performance indicators">
+              <div class="kpi-chip" role="listitem">
+                <span class="kpi-label">Median rent Δ:</span>
+                <span class="kpi-value" data-kpi="rent-delta">—</span>
+                <span class="kpi-divider" aria-hidden="true">·</span>
+                <span class="kpi-period">2010–2024</span>
+              </div>
+              <div class="kpi-chip" role="listitem">
+                <span class="kpi-label">Wage–rent gap:</span>
+                <span class="kpi-value" data-kpi="wage-gap">—</span>
+                <span class="kpi-divider" aria-hidden="true">·</span>
+                <span class="kpi-period">2015–2024</span>
+              </div>
+              <div class="kpi-chip" role="listitem">
+                <span class="kpi-label">Volatility hotspots:</span>
+                <span class="kpi-value" data-kpi="volatility-hotspots">—</span>
+                <span class="kpi-divider" aria-hidden="true">·</span>
+                <span class="kpi-period">2010–2024</span>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     </header>
