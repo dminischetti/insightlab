@@ -1,7 +1,8 @@
 # OLS Appendix — NYC Housing Dynamics
 
 **Model:** `rent ~ const + income + subway + inverseAir`  
-**Window:** 2020–2024 (last 5 years). **N:** 25
+**Window:** 2020–2024 (last 5 years).
+**N:** 25
 **R²:** 0.9975 (**Adj. R²:** 0.9972), **σ (resid):** 32.28
 
 ## Coefficients
@@ -13,6 +14,6 @@
 | inverseAir | 11.7151 | 4.4019 | 2.661 | 0.0078 | [3.0875, 20.3428] |
 
 Breusch–Pagan: LM = 5.81 (p = 0.0547), F = 2.12 (p = 0.0416).
-Variance Inflation Factors: income 3.49, subway 1.64, inverseAir 4.51.
+Variance Inflation Factors: income: 3.49, subway: 1.64, inverseAir: 4.51.
 
 Notes: observational data; possible omitted-variable bias; limited window captures recent dynamics.
