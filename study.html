@@ -4,23 +4,34 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>InsightLab: NYC Housing Dynamics — Case Study</title>
-    <meta name="description" content="Full narrative, methods, and technical appendix for the InsightLab NYC housing dynamics case study." />
+    <meta
+      name="description"
+      content="Full narrative, methods, and technical appendix for the InsightLab NYC housing dynamics case study."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://jordanchen.github.io/insightlab/study.html" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="InsightLab: NYC Housing Dynamics — Case Study" />
+    <meta
+      property="og:description"
+      content="Full narrative, methods, and technical appendix for the InsightLab NYC housing dynamics case study."
+    />
+    <meta property="og:url" content="https://jordanchen.github.io/insightlab/study.html" />
+    <meta property="og:image" content="https://jordanchen.github.io/insightlab/assets/logo.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="InsightLab: NYC Housing Dynamics — Case Study" />
+    <meta
+      name="twitter:description"
+      content="Full narrative, methods, and technical appendix for the InsightLab NYC housing dynamics case study."
+    />
+    <meta name="theme-color" content="#0b1221" />
     <link rel="icon" type="image/svg+xml" href="./assets/logo.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet" />
-    <script>
-      (function () {
-        const originalWarn = console.warn;
-        console.warn = function (...args) {
-          if (args.length && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
-            return;
-          }
-          originalWarn.apply(console, args);
-        };
-      })();
-    </script>
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+Pro:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="stylesheet" href="./css/animations.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
@@ -30,8 +41,8 @@
     <p class="elevator-pitch">
       Exploring how income, transport, and environment shaped NYC’s rent dynamics — built from scratch by a data-driven backend developer.
     </p>
-    <header class="hero" style="min-height: 60vh">
-      <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
+    <header class="hero hero--study" role="banner">
+      <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme" type="button">
         <img src="./assets/icons/theme.svg" alt="Theme" />
       </button>
       <h1>InsightLab: NYC Housing Dynamics</h1>
@@ -47,7 +58,7 @@
 
     <main class="anchor-layout">
       <nav class="anchor-nav" aria-label="Study navigation">
-        <a href="#executive-summary" class="active">Executive Summary</a>
+        <a href="#executive-summary" class="active" aria-current="page">Executive Summary</a>
         <a href="#tech-data">Tech &amp; Data</a>
         <a href="#methodology">Data &amp; Methodology</a>
         <a href="#results">Results</a>
@@ -279,11 +290,11 @@ WHERE year BETWEEN 2019 AND 2024;</code></pre>
                 <img src="./assets/icons/download.svg" alt="Download CSV" width="18" height="18" />
                 Download CSV
               </a>
-              <button data-download="json" class="btn-secondary">
+              <button data-download="json" class="btn-secondary" type="button">
                 <img src="./assets/icons/download.svg" alt="Download derived JSON" width="18" height="18" />
                 Download derived JSON
               </button>
-              <button data-print class="print-button">Print / Save PDF</button>
+              <button data-print class="print-button" type="button">Print / Save PDF</button>
             </div>
           </div>
           <div class="key-takeaway" role="note">Key takeaway: Next steps widen the scope to granular listings, ridership elasticity, and rent-burden diagnostics.</div>
@@ -292,7 +303,12 @@ WHERE year BETWEEN 2019 AND 2024;</code></pre>
     </main>
 
     <footer>
-      <p>Crafted by Jordan Chen — <a href="https://github.com/jordanchen" target="_blank" rel="noopener">GitHub</a> · <a href="https://www.linkedin.com/in/jordanchenanalytics/" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>
+        Crafted by Jordan Chen —
+        <a href="https://github.com/jordanchen" target="_blank" rel="noopener noreferrer">GitHub</a>
+        ·
+        <a href="https://www.linkedin.com/in/jordanchenanalytics/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      </p>
       <p>InsightLab is a full-stack, data-driven storytelling platform built to explore NYC housing over 14 years — showcasing end-to-end data engineering, statistical modeling, and interactive visualization.</p>
       <p>Swap ./data/nyc_median_rent.csv with a fresh export to refresh visuals instantly; embedded fallbacks keep the experience offline-ready.</p>
     </footer>
