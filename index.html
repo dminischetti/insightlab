@@ -389,16 +389,49 @@
       <!-- Data Transparency Layer -->
       <section id="how-i-built-this" class="study-section transparency-section" aria-labelledby="transparency-title">
         <div class="content-container" data-animate>
-          <button class="transparency-toggle" data-transparency-toggle aria-expanded="false" aria-controls="transparency-content" type="button">
-            <span class="toggle-icon">🧠</span>
-            <h2 id="transparency-title">How I Built This</h2>
-            <svg class="toggle-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
+          <div class="transparency-header">
+            <div class="transparency-heading">
+              <span class="transparency-chip">Build log</span>
+              <h2 id="transparency-title">How I Built This</h2>
+              <p class="transparency-intro">A fast tour through the pipeline, tools, and decisions that shaped this analysis.</p>
+            </div>
+            <button
+              class="transparency-toggle"
+              data-transparency-toggle
+              aria-expanded="false"
+              aria-controls="transparency-content"
+              type="button"
+            >
+              <span class="toggle-visual" aria-hidden="true">
+                <span class="toggle-icon">🧠</span>
+                <span class="toggle-pulse"></span>
+              </span>
+              <span class="toggle-copy">
+                <span class="toggle-label" data-toggle-label>Expand breakdown</span>
+                <span class="toggle-hint" data-toggle-hint>Peek at the workflow</span>
+              </span>
+              <svg class="toggle-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
           <div class="transparency-content" id="transparency-content" hidden>
+            <div class="transparency-overview" role="list">
+              <div class="overview-card" role="listitem">
+                <span class="overview-metric">14 yrs</span>
+                <span class="overview-label">Rent & income history normalized</span>
+              </div>
+              <div class="overview-card" role="listitem">
+                <span class="overview-metric">5 feeds</span>
+                <span class="overview-label">Public datasets reconciled by borough</span>
+              </div>
+              <div class="overview-card" role="listitem">
+                <span class="overview-metric">4 layers</span>
+                <span class="overview-label">Cleaning, modeling, viz, QA</span>
+              </div>
+            </div>
             <div class="transparency-grid">
-              <div class="transparency-card" data-animate>
+              <article class="transparency-card" data-animate>
                 <h3>📦 Data Sources</h3>
                 <ul>
                   <li>NYC Open Data (Housing Indicators, 2010-2024)</li>
@@ -407,8 +440,8 @@
                   <li>MTA GTFS feeds (Transit proximity)</li>
                   <li>DOB Permits (Residential changes)</li>
                 </ul>
-              </div>
-              <div class="transparency-card" data-animate>
+              </article>
+              <article class="transparency-card" data-animate>
                 <h3>⚙️ Tech Stack</h3>
                 <ul>
                   <li><strong>Python</strong> – Data pipeline & analysis</li>
@@ -417,27 +450,27 @@
                   <li><strong>Vanilla JS</strong> – No framework overhead</li>
                   <li><strong>CSS Custom Properties</strong> – Theme system</li>
                 </ul>
-              </div>
-              <div class="transparency-card" data-animate>
-                <h3>🔄 Pipeline Overview</h3>
+              </article>
+              <article class="transparency-card transparency-timeline" data-animate>
+                <h3>🔄 Pipeline Flow</h3>
                 <ol>
-                  <li>Fetch & normalize data from 5 public sources</li>
-                  <li>Clean outliers, adjust for inflation (CPI)</li>
-                  <li>Join by borough-year, reconcile mismatches</li>
-                  <li>Run OLS regression & correlation analysis</li>
-                  <li>Generate viz payload & summary JSON</li>
-                  <li>Static site generation with live fallbacks</li>
+                  <li><span>Harvest & normalize five public sources</span></li>
+                  <li><span>De-dup anomalies, CPI-adjust every money field</span></li>
+                  <li><span>Join on borough-year and plug tract gaps</span></li>
+                  <li><span>Model rent vs. wage tension and variance</span></li>
+                  <li><span>Assemble insight payloads & chart configs</span></li>
+                  <li><span>Ship to static site with progressive data loads</span></li>
                 </ol>
-              </div>
-              <div class="transparency-card" data-animate>
-                <h3>🎯 Technical Challenge Solved</h3>
+              </article>
+              <article class="transparency-card transparency-highlight" data-animate>
+                <h3>🎯 Breakthrough</h3>
                 <p>
-                  <strong>Borough-level tract reconciliation:</strong> ACS and NYC Open Data use different geographic identifiers. Built a custom lookup table mapping census tracts to boroughs with 99.8% coverage, handling edge cases like airports and parks that appear in datasets but don't have residential units.
+                  <strong>Borough-level tract reconciliation:</strong> ACS and NYC Open Data ship incompatible geography keys. I built a lookup that maps tract IDs to boroughs with 99.8% coverage and flags outlier geos like airports and parks.
                 </p>
                 <p class="challenge-outcome">
-                  <strong>Result:</strong> Achieved consistent time-series without gaps, enabling reliable year-over-year comparisons.
+                  <strong>Result:</strong> Continuous year-over-year comparisons without manual patching.
                 </p>
-              </div>
+              </article>
             </div>
           </div>
         </div>

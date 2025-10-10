@@ -8,6 +8,8 @@
 export function initTransparencyToggle() {
   const toggle = document.querySelector('[data-transparency-toggle]');
   const content = document.getElementById('transparency-content');
+  const label = toggle?.querySelector('[data-toggle-label]');
+  const hint = toggle?.querySelector('[data-toggle-hint]');
 
   if (!toggle || !content) return;
 
@@ -18,10 +20,14 @@ export function initTransparencyToggle() {
       // Collapse
       toggle.setAttribute('aria-expanded', 'false');
       content.setAttribute('hidden', '');
+      if (label) label.textContent = 'Expand breakdown';
+      if (hint) hint.textContent = 'Peek at the workflow';
     } else {
       // Expand
       toggle.setAttribute('aria-expanded', 'true');
       content.removeAttribute('hidden');
+      if (label) label.textContent = 'Hide breakdown';
+      if (hint) hint.textContent = 'Close build notes';
     }
   });
 }
