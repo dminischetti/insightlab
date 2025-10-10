@@ -1,7 +1,6 @@
 // main.js - Production-ready JavaScript that uses YOUR actual data
 
 // Import enhancement modules
-import { initGuidedTour } from './tour.js';
 import { initInsightCards } from './insightCards.js';
 import { initTransparencyToggle } from './transparency.js';
 import { addChartAnimations, observeChartAnimations } from './chartAnimations.js';
@@ -824,7 +823,6 @@ const init = async () => {
     initSmoothScroll();
     initKeyboardNav();
     initKPIs();
-    initGuidedTour();
     initTransparencyToggle();
     initPandemicToggle();
     initErrorHandling();

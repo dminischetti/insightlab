@@ -6,21 +6,18 @@ This document describes the interactive storytelling enhancements added to Insig
 
 ## New Features
 
-### 1. 🎯 Guided Tour Mode
-**What it does:** Provides a 60-second auto-scroll experience through the key storytelling sections.
+### 1. 🧭 Responsive Hero Layout
+**What changed:** Re-centered the landing experience around a flexible toolbar and a dedicated metrics panel.
 
 **User Experience:**
-- Floating "Take a Tour" button in bottom-right corner
-- Auto-scrolls through 5 main sections with smooth transitions
-- Displays contextual captions for each section
-- Pause/resume capability with single click
-- Accessible via keyboard navigation
+- Theme, density, and pandemic controls sit beside the introduction for immediate context
+- Desktop view uses a two-column grid that keeps the narrative and metrics balanced
+- Mobile view turns the toolbar into thumb-friendly buttons stacked within the hero
 
 **Technical Implementation:**
-- Module: `js/tour.js`
-- Timing: 2-3 seconds per section for natural pacing
-- Smooth scroll behavior with caption overlays
-- Fully accessible with ARIA labels
+- New `.hero-header`, `.hero-layout`, and `.hero-aside` grid constructs
+- Responsive CSS with flex-wrap and grid breakpoints at 62rem and 48rem
+- Shared overlay styling for controls and metrics to maintain clarity across themes
 
 ### 2. 💡 Personal Insight Cards
 **What it does:** Humanizes the technical process with thought bubble overlays at key visualizations.
@@ -157,7 +154,6 @@ This document describes the interactive storytelling enhancements added to Insig
 - None! All features built with vanilla JavaScript
 
 **New Files Added:**
-- `js/tour.js` - Guided tour functionality
 - `js/insightCards.js` - Personal insight overlays
 - `js/transparency.js` - Collapsible transparency section
 - `js/pandemicToggle.js` - Before/after 2020 comparison
@@ -166,8 +162,8 @@ This document describes the interactive storytelling enhancements added to Insig
 - `js/shareableInsights.js` - Image export feature
 
 **Modified Files:**
-- `index.html` - Added new UI elements and sections
-- `css/style.css` - Styling for all new features
+- `index.html` - Added new UI elements and sections; reorganized hero layout
+- `css/style.css` - Styling for all new features and responsive hero refresh
 - `js/main.js` - Integration and initialization
 
 ## For Recruiters
@@ -200,7 +196,7 @@ This document describes the interactive storytelling enhancements added to Insig
 
 ### Try It Out
 
-1. **Click "Take a Tour"** - Experience the auto-guided storytelling
+1. **Use the hero controls** - Toggle theme, density, and pandemic comparison from the landing section
 2. **Scroll through visualizations** - Watch for insight cards appearing
 3. **Click "How I Built This"** - See technical transparency
 4. **Toggle "Compare 2020"** - Explore pandemic comparison
@@ -215,7 +211,7 @@ This document describes the interactive storytelling enhancements added to Insig
 - Graceful degradation for older browsers
 
 **Future Enhancements:**
-- Additional tour modes (e.g., "5-minute deep dive")
+- Preset hero control combinations (e.g., "Light + Spacious" quick switch)
 - More granular pandemic comparison controls
 - Interactive "what-if" scenario modeling
 - A/B testing framework for storytelling approaches
