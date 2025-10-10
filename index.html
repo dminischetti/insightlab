@@ -25,6 +25,14 @@
     <div id="progress-bar" aria-hidden="true"></div>
     <a class="skip-link" href="#main">Skip to main content</a>
 
+    <!-- Guided Tour Button -->
+    <button class="tour-button" data-tour-button aria-label="Take a 60-second guided tour" type="button">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M5 3L12 8L5 13V3Z" fill="currentColor"/>
+      </svg>
+      <span>Take a Tour</span>
+    </button>
+
     <header class="hero" role="banner">
       <div class="hero-overlay" aria-hidden="true"></div>
       <div class="hero-controls">
@@ -33,6 +41,9 @@
             <path class="sun-icon" d="M10 3V1M10 19V17M17 10H19M1 10H3M15.657 4.343L17.071 2.929M2.929 17.071L4.343 15.657M15.657 15.657L17.071 17.071M2.929 2.929L4.343 4.343M14 10C14 12.209 12.209 14 10 14C7.791 14 6 12.209 6 10C6 7.791 7.791 6 10 6C12.209 6 14 7.791 14 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             <path class="moon-icon" d="M17 10C17 13.866 13.866 17 10 17C6.134 17 3 13.866 3 10C3 6.134 6.134 3 10 3C10.395 3 10.784 3.031 11.164 3.089C9.889 4.187 9.1 5.843 9.1 7.7C9.1 10.841 11.559 13.4 14.7 13.4C15.668 13.4 16.583 13.166 17.395 12.753C17.133 11.551 17 10.294 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
+        </button>
+        <button class="pandemic-toggle" data-pandemic-toggle aria-pressed="false" aria-label="Switch to pandemic comparison view" type="button">
+          Compare 2020
         </button>
         <button class="density-toggle" data-density-toggle aria-pressed="true" type="button">
           <span class="density-label">Compact</span>
@@ -352,10 +363,79 @@
           </div>
         </div>
       </section>
+
+      <!-- Data Transparency Layer -->
+      <section id="how-i-built-this" class="study-section transparency-section" aria-labelledby="transparency-title">
+        <div class="content-container" data-animate>
+          <button class="transparency-toggle" data-transparency-toggle aria-expanded="false" aria-controls="transparency-content" type="button">
+            <span class="toggle-icon">🧠</span>
+            <h2 id="transparency-title">How I Built This</h2>
+            <svg class="toggle-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="transparency-content" id="transparency-content" hidden>
+            <div class="transparency-grid">
+              <div class="transparency-card" data-animate>
+                <h3>📦 Data Sources</h3>
+                <ul>
+                  <li>NYC Open Data (Housing Indicators, 2010-2024)</li>
+                  <li>ACS 1-year Estimates (Median household income)</li>
+                  <li>BLS QCEW (Quarterly wage data)</li>
+                  <li>MTA GTFS feeds (Transit proximity)</li>
+                  <li>DOB Permits (Residential changes)</li>
+                </ul>
+              </div>
+              <div class="transparency-card" data-animate>
+                <h3>⚙️ Tech Stack</h3>
+                <ul>
+                  <li><strong>Python</strong> – Data pipeline & analysis</li>
+                  <li><strong>DuckDB</strong> – Fast analytical queries</li>
+                  <li><strong>Chart.js</strong> – Interactive visualizations</li>
+                  <li><strong>Vanilla JS</strong> – No framework overhead</li>
+                  <li><strong>CSS Custom Properties</strong> – Theme system</li>
+                </ul>
+              </div>
+              <div class="transparency-card" data-animate>
+                <h3>🔄 Pipeline Overview</h3>
+                <ol>
+                  <li>Fetch & normalize data from 5 public sources</li>
+                  <li>Clean outliers, adjust for inflation (CPI)</li>
+                  <li>Join by borough-year, reconcile mismatches</li>
+                  <li>Run OLS regression & correlation analysis</li>
+                  <li>Generate viz payload & summary JSON</li>
+                  <li>Static site generation with live fallbacks</li>
+                </ol>
+              </div>
+              <div class="transparency-card" data-animate>
+                <h3>🎯 Technical Challenge Solved</h3>
+                <p>
+                  <strong>Borough-level tract reconciliation:</strong> ACS and NYC Open Data use different geographic identifiers. Built a custom lookup table mapping census tracts to boroughs with 99.8% coverage, handling edge cases like airports and parks that appear in datasets but don't have residential units.
+                </p>
+                <p class="challenge-outcome">
+                  <strong>Result:</strong> Achieved consistent time-series without gaps, enabling reliable year-over-year comparisons.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer class="site-footer">
-      <p>Independent study by Dominic Minischetti • © 2025</p>
+      <div class="footer-signature">
+        <svg class="signature-animation" width="400" height="80" viewBox="0 0 400 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path class="signature-path" d="M10 40 Q 50 10, 90 40 T 170 40 Q 210 10, 250 40 T 330 40 L 390 40" 
+                stroke="var(--accent-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                stroke-dasharray="1000" stroke-dashoffset="1000"/>
+        </svg>
+        <p class="signature-text">
+          <span class="signature-brand">InsightLab</span> by 
+          <span class="signature-name">Dominic Minischetti</span>
+          <span class="signature-tagline">— Data that tells a story.</span>
+        </p>
+      </div>
+      <p class="footer-legal">Independent study • © 2025</p>
     </footer>
   </body>
 </html>

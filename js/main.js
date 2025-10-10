@@ -1,5 +1,13 @@
 // main.js - Production-ready JavaScript that uses YOUR actual data
 
+// Import enhancement modules
+import { initGuidedTour } from './tour.js';
+import { initInsightCards } from './insightCards.js';
+import { initTransparencyToggle } from './transparency.js';
+import { addChartAnimations, observeChartAnimations } from './chartAnimations.js';
+import { initPandemicToggle } from './pandemicToggle.js';
+import { initShareableInsights } from './shareableInsights.js';
+
 // =============================================================================
 // CONSTANTS & STATE
 // =============================================================================
@@ -283,7 +291,7 @@ const createBarChart = (data) => {
         },
       ],
     },
-    options: {
+    options: addChartAnimations({
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
@@ -315,7 +323,7 @@ const createBarChart = (data) => {
           grid: { display: false },
         },
       },
-    },
+    }, true),
   });
 
   STATE.chartInstances.set('bar', chart);
@@ -816,6 +824,9 @@ const init = async () => {
     initSmoothScroll();
     initKeyboardNav();
     initKPIs();
+    initGuidedTour();
+    initTransparencyToggle();
+    initPandemicToggle();
     initErrorHandling();
 
     await loadData();
@@ -827,6 +838,13 @@ const init = async () => {
           createSmallMultiples(STATE.data.rentData);
           createScatterChart(STATE.data.scatterData);
           createHeatmapChart(STATE.data.heatmapData);
+          
+          // Initialize insight cards, chart animations, and share buttons after charts are rendered
+          setTimeout(() => {
+            initInsightCards();
+            observeChartAnimations();
+            initShareableInsights();
+          }, 500);
           initChartTabs();
           updateKPIs();
         } else {

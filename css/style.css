@@ -353,7 +353,8 @@
   }
 
   .theme-toggle,
-  .density-toggle {
+  .density-toggle,
+  .pandemic-toggle {
     min-block-size: 2.75rem;
     min-inline-size: 2.75rem;
     padding: 0.625rem 1rem;
@@ -1052,5 +1053,499 @@
   .study-section {
     page-break-inside: avoid;
     break-inside: avoid;
+  }
+
+  /* =============================================================================
+   * GUIDED TOUR BUTTON - Floating CTA for auto-scroll storytelling
+   * ============================================================================= */
+  .tour-button {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem 1.5rem;
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    box-shadow: var(--shadow-xl);
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    backdrop-filter: blur(12px);
+  }
+
+  .tour-button:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 24px 32px -8px oklch(0% 0 0 / 0.25);
+  }
+
+  .tour-button:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-offset), var(--shadow-xl);
+  }
+
+  .tour-button svg {
+    flex-shrink: 0;
+  }
+
+  @media (width <= 48rem) {
+    .tour-button {
+      bottom: 1.5rem;
+      right: 1.5rem;
+      padding: 0.75rem 1.25rem;
+      font-size: 0.875rem;
+    }
+  }
+
+  /* Tour caption overlay */
+  .tour-caption {
+    animation: tourCaptionPulse 0.4s ease;
+  }
+
+  @keyframes tourCaptionPulse {
+    0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* =============================================================================
+   * PERSONAL INSIGHT CARDS - Overlay thought bubbles at key visualizations
+   * ============================================================================= */
+  .personal-insight-card {
+    position: absolute;
+    max-width: 280px;
+    padding: 1rem 1.25rem;
+    background: var(--bg-overlay);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 10;
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+    transition: opacity 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+                transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .personal-insight-card.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .insight-icon {
+    display: inline-block;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .insight-text {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--fg-muted);
+    margin: 0;
+  }
+
+  /* Positioning variants */
+  .insight-top-right {
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .insight-top-left {
+    top: 1rem;
+    left: 1rem;
+  }
+
+  .insight-bottom-right {
+    bottom: 1rem;
+    right: 1rem;
+  }
+
+  .insight-bottom-left {
+    bottom: 1rem;
+    left: 1rem;
+  }
+
+  @media (width <= 48rem) {
+    .personal-insight-card {
+      max-width: calc(100% - 2rem);
+      position: relative;
+      top: auto !important;
+      right: auto !important;
+      bottom: auto !important;
+      left: auto !important;
+      margin-top: 1rem;
+    }
+  }
+
+  /* =============================================================================
+   * DATA TRANSPARENCY LAYER - "How I Built This" collapsible section
+   * ============================================================================= */
+  .transparency-section {
+    background: var(--bg-elevated);
+    border-top: 1px solid var(--border);
+    margin-top: var(--section-gap);
+  }
+
+  .transparency-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 1.5rem 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-serif);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--fg);
+    text-align: left;
+    transition: color 0.3s ease;
+  }
+
+  .transparency-toggle:hover {
+    color: var(--accent-cyan);
+  }
+
+  .transparency-toggle:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: var(--radius-sm);
+  }
+
+  .toggle-icon {
+    font-size: 2rem;
+  }
+
+  .toggle-chevron {
+    margin-left: auto;
+    transition: transform 0.3s ease;
+  }
+
+  .transparency-toggle[aria-expanded="true"] .toggle-chevron {
+    transform: rotate(180deg);
+  }
+
+  .transparency-content {
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+  }
+
+  .transparency-content[hidden] {
+    display: block;
+    max-height: 0;
+    opacity: 0;
+  }
+
+  .transparency-content:not([hidden]) {
+    max-height: 2000px;
+    opacity: 1;
+  }
+
+  .transparency-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem 0;
+  }
+
+  .transparency-card {
+    background: var(--bg);
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .transparency-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .transparency-card h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--fg);
+  }
+
+  .transparency-card ul,
+  .transparency-card ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .transparency-card li {
+    padding: 0.375rem 0;
+    color: var(--fg-muted);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .transparency-card ul li::before {
+    content: '•';
+    color: var(--accent-cyan);
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
+    margin-right: 0.5em;
+  }
+
+  .transparency-card ol {
+    counter-reset: step-counter;
+  }
+
+  .transparency-card ol li {
+    counter-increment: step-counter;
+    padding-left: 2rem;
+    position: relative;
+  }
+
+  .transparency-card ol li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: 0.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    background: var(--accent-gradient);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .transparency-card p {
+    margin: 0.5rem 0;
+    color: var(--fg-muted);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .challenge-outcome {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: oklch(from var(--accent-cyan) l c h / 0.1);
+    border-left: 3px solid var(--accent-cyan);
+    border-radius: 0.25rem;
+  }
+
+  /* =============================================================================
+   * FOOTER SIGNATURE - Animated personal branding
+   * ============================================================================= */
+  .site-footer {
+    margin-top: var(--section-gap);
+    padding: 3rem var(--container-padding) 2rem;
+    background: var(--bg);
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .footer-signature {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .signature-animation {
+    max-width: 400px;
+    width: 100%;
+    height: auto;
+  }
+
+  .signature-path {
+    animation: drawSignature 3s ease-in-out forwards;
+  }
+
+  @keyframes drawSignature {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .signature-text {
+    text-align: center;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--fg);
+    margin: 0;
+  }
+
+  .signature-brand {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--accent-cyan);
+  }
+
+  .signature-name {
+    font-weight: 600;
+  }
+
+  .signature-tagline {
+    display: block;
+    margin-top: 0.25rem;
+    font-style: italic;
+    color: var(--fg-muted);
+    font-size: 0.9375rem;
+  }
+
+  .footer-legal {
+    text-align: center;
+    color: var(--fg-subtle);
+    font-size: 0.875rem;
+    margin: 0;
+  }
+
+  @media (width <= 48rem) {
+    .transparency-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .signature-text {
+      font-size: 1rem;
+    }
+
+    .signature-brand {
+      font-size: 1.125rem;
+    }
+  }
+
+  /* =============================================================================
+   * CHART ANIMATIONS - Smooth entrance effects for visualizations
+   * ============================================================================= */
+  @keyframes chartCardEntrance {
+    0% {
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  canvas[id^="chart-"] {
+    transition: opacity 0.5s ease;
+  }
+
+  canvas[id^="chart-"]:not([data-animated]) {
+    opacity: 0;
+  }
+
+  canvas[id^="chart-"][data-animated] {
+    opacity: 1;
+  }
+
+  /* =============================================================================
+   * PANDEMIC COMPARISON TOGGLE - Before/After 2020 switcher
+   * ============================================================================= */
+  .pandemic-toggle {
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+  }
+
+  .pandemic-toggle[aria-pressed="true"] {
+    background: var(--accent-gradient);
+    color: white;
+    border-color: transparent;
+  }
+
+  .pandemic-toggle:hover {
+    transform: translateY(-1px);
+  }
+
+  body.pandemic-mode {
+    --accent-primary: oklch(65% 0.20 30);
+  }
+
+  .pandemic-notification {
+    animation: pandemicNotificationSlide 0.4s ease;
+  }
+
+  @keyframes pandemicNotificationSlide {
+    0% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  /* =============================================================================
+   * SHAREABLE INSIGHTS - Share button styling
+   * ============================================================================= */
+  .share-insight-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--fg-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0;
+  }
+
+  .insight-card:hover .share-insight-btn {
+    opacity: 1;
+  }
+
+  .share-insight-btn:hover {
+    background: var(--accent-gradient);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .share-insight-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  .share-insight-btn svg {
+    flex-shrink: 0;
+  }
+
+  .share-notification {
+    animation: shareNotificationSlide 0.3s ease;
+  }
+
+  @keyframes shareNotificationSlide {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (width <= 48rem) {
+    .share-insight-btn {
+      opacity: 1;
+      font-size: 0.8125rem;
+      padding: 0.4rem 0.75rem;
+    }
   }
 }
